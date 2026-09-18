@@ -1,17 +1,53 @@
+﻿# ───── Python ─────
 .venv/
-.uv-cache/
-.tmp/
+venv/
+env/
+ENV/
+.python-version
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
 *.egg-info/
+build/
+dist/
+.eggs/
+pip-wheel-metadata/
+
+# ───── Test / coverage / lint caches ─────
 .pytest_cache/
 pytest-cache-files-*/
 .mypy_cache/
 .ruff_cache/
 .coverage
+.coverage.*
 htmlcov/
-build/
-dist/
+coverage.xml
+.cache/
+
+# ───── Environment & secrets ─────
 .env
 .env.*
 !.env.example
+
+# ───── Runtime / app logs ─────
+*.log
+uvi.out
+uvi.err
+.tmp/
+
+# ───── Editor / IDE ─────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ───── OS ─────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ───── Misc ─────
+.uv-cache/
+node_modules/

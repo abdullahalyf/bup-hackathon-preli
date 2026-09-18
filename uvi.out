@@ -1,5 +1,0 @@
-INFO:     127.0.0.1:53047 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55243 - "GET / HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55243 - "GET /chart.umd.min.js HTTP/1.1" 404 Not Found
-INFO:     127.0.0.1:55243 - "GET /favicon.ico HTTP/1.1" 404 Not Found
-INFO:     127.0.0.1:65044 - "POST /optimize-energy HTTP/1.1" 200 OK

@@ -1,7 +1,0 @@
-INFO:     Started server process [38480]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-interpret_notes: LLM failed (no provider configured); continuing
-interpret_notes: LLM failed (no provider configured); continuing
-2026-09-18 22:35:45,977 INFO gridwise.api request scenario_id=SAMPLE-01 notes=2 types=[] interpret_ms=2 optimize_ms=22 total_ms=26 cache_hit=False interp_err=False
