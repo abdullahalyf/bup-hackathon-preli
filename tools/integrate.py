@@ -14,7 +14,7 @@ from urllib.request import urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 LIVE_URL = "https://gridwise-production-0e08.up.railway.app"
-BRANCHES = ("taseen", "tamjid", "jubayer", "alif")
+BRANCHES = ("taseen", "tamjid", "jubayer", "alif", "alif-fix")
 DOC_CONFLICTS = {"AGENTS.md", "CLAUDE.md"}
 
 
