@@ -609,12 +609,74 @@ tr.peak .row-mark{color:var(--mag)}
 @media (max-width:1100px){.sys-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:680px){.sys-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .kbd{display:inline-block;border:1px solid rgba(13,26,20,0.30);border-bottom-width:2px;border-radius:3px;padding:1px 5px;font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(243,234,211,0.7);color:var(--ink);letter-spacing:0.08em}
+.grain{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:0;opacity:0.42;mix-blend-mode:multiply}
+.frame{position:relative;z-index:1}
+.op-input{background:transparent;border:0;border-bottom:1px dashed rgba(13,26,20,0.45);font-family:'Special Elite',monospace;font-size:11px;color:var(--ink);width:130px;padding:1px 4px;letter-spacing:0.10em;text-transform:uppercase;outline:none}
+.op-input:focus{border-bottom-style:solid;border-bottom-color:var(--mag-d);background:rgba(255,61,139,0.06)}
+.memo{position:fixed;right:18px;bottom:56px;width:230px;background:#fff7c2;border:1px solid var(--ink);box-shadow:3px 3px 0 0 rgba(13,26,20,0.85);padding:10px 12px 8px;z-index:50;font-family:'Special Elite',monospace;transform:rotate(-1.2deg);transition:transform .25s ease,opacity .25s ease}
+.memo.hidden{transform:rotate(-1.2deg) translateY(140%);opacity:0;pointer-events:none}
+.memo::before{content:"";position:absolute;top:-7px;left:18px;width:36px;height:14px;background:rgba(255,61,139,0.45);transform:rotate(-3deg);box-shadow:0 1px 0 rgba(13,26,20,0.18)}
+.memo-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px dashed rgba(13,26,20,0.35);padding-bottom:5px;margin-bottom:6px}
+.memo-title{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.22em;color:var(--ink-2)}
+.memo-x{background:transparent;border:0;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1;color:var(--ink);cursor:pointer;padding:0 4px}
+.memo-x:hover{color:var(--mag-d)}
+.memo textarea{width:100%;height:96px;border:0;background:transparent;font-family:'Special Elite',monospace;font-size:12px;line-height:1.45;color:var(--ink);outline:none;resize:vertical}
+.memo-foot{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.18em;color:var(--ink-3);margin-top:5px}
+.memo-foot #memo-chars{color:var(--ink-2)}
+.memo-toggle{position:fixed;right:18px;bottom:18px;z-index:49;background:var(--ink);color:#f3ead3;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.20em;border:1px solid var(--ink);padding:6px 10px;cursor:pointer;box-shadow:2px 2px 0 0 rgba(13,26,20,0.40)}
+.memo-toggle:hover{background:var(--mag-d)}
+.diff-row{margin-top:14px;border-top:1px dashed rgba(13,26,20,0.28);padding-top:12px}
+.diff-head{display:flex;justify-content:space-between;align-items:baseline;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.20em;color:var(--ink-2);margin-bottom:8px}
+.diff-head b{color:var(--ink);letter-spacing:0.06em}
+.diff-head .meta{font-size:9px;color:var(--ink-3);letter-spacing:0.18em}
+.diff-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border:1px solid rgba(13,26,20,0.30);background:rgba(243,234,211,0.4)}
+.diff-cell{padding:8px 10px;border-right:1px dashed rgba(13,26,20,0.28);display:flex;flex-direction:column;gap:2px;position:relative}
+.diff-cell:last-child{border-right:0}
+.diff-cell .dl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.20em;color:var(--ink-3)}
+.diff-cell .dv{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--ink);letter-spacing:0.04em}
+.diff-cell .dp{font-family:'JetBrains Mono',monospace;font-size:10px;font-style:normal;letter-spacing:0.10em;margin-top:2px;color:var(--phos-d)}
+.diff-cell .dp.down{color:var(--mag-d)}
+.diff-cell .dp.up{color:var(--cyan-d)}
+.diff-cell .dp.flat{color:var(--ink-3)}
+@media (max-width:1100px){.diff-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:680px){.diff-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.cmp-row{margin-top:14px;border-top:1px dashed rgba(13,26,20,0.28);padding-top:12px}
+.cmp-head{display:flex;justify-content:space-between;align-items:baseline;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.20em;color:var(--ink-2);margin-bottom:8px}
+.cmp-head .meta{font-size:9px;color:var(--ink-3);letter-spacing:0.18em}
+.cmp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cmp-cell{background:rgba(243,234,211,0.55);border:1px solid rgba(13,26,20,0.30);padding:10px 12px;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;position:relative;font-family:'JetBrains Mono',monospace}
+.cmp-cell::after{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--phos-d)}
+.cmp-cell[data-cmp="SAMPLE-03"]::after{background:var(--cyan-d)}
+.cmp-cell[data-cmp="SAMPLE-05"]::after{background:var(--mag-d)}
+.cmp-cell .cmp-id{grid-column:1/3;font-size:10px;font-weight:700;letter-spacing:0.18em;color:var(--ink)}
+.cmp-cell .cmp-tag{grid-column:1/3;justify-self:start;font-size:7px;letter-spacing:0.20em;padding:2px 6px;border-radius:99px;background:var(--ink);color:#f3ead3;margin:-2px 0 4px}
+.cmp-cell .cmp-tag.phos{background:var(--phos-d)}
+.cmp-cell .cmp-tag.cyan{background:var(--cyan-d)}
+.cmp-cell .cmp-tag.mag{background:var(--mag-d)}
+.cmp-cell .cmp-lbl{font-size:8px;color:var(--ink-3);letter-spacing:0.18em;align-self:center}
+.cmp-cell .cmp-v{font-size:11px;font-weight:700;color:var(--ink);justify-self:end;align-self:center}
+@media (max-width:900px){.cmp-grid{grid-template-columns:1fr}}
+.dual-top .dual-glyph{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--ink);color:#f3ead3;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;border-radius:2px;margin-right:8px;vertical-align:middle;letter-spacing:0}
+.dual-top .dual-glyph.g-solar_reduction{background:var(--phos-d)}
+.dual-top .dual-glyph.g-minimum_battery_reserve{background:var(--cyan-d)}
+.dual-top .dual-glyph.g-no_charge_window{background:var(--amber-d)}
+.dual-top .dual-glyph.g-no_discharge_window{background:#7c3aed;color:#f3ead3}
+.dual-top .dual-glyph.g-max_grid_window{background:var(--mag-d)}
+.dual-top .dual-glyph.g-no_op{background:var(--ink-3)}
+.bar #sim-clock{font-variant-numeric:tabular-nums;color:var(--phos-d);border:1px dashed rgba(13,26,20,0.45);padding:1px 5px;letter-spacing:0.10em;background:rgba(13,26,20,0.06);position:relative}
+.bar #sim-clock.live::before{content:"●";color:var(--cyan-d);font-size:8px;margin-right:4px;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.tape b{color:var(--ink);letter-spacing:0.10em}
 
 </style>
 </head>
 <body>
 \
 <div class="frame">
+<svg class="grain" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <filter id="grain-noise"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0.05  0 0 0 0 0.10  0 0 0 0 0.08  0 0 0 0.32 0"/></filter>
+  <rect width="100%" height="100%" filter="url(#grain-noise)"/>
+</svg>
 <header class="stamp">
   <div class="brand">
     <div class="seal" aria-hidden="true">
@@ -632,7 +694,7 @@ tr.peak .row-mark{color:var(--mag)}
     <div><h1>GridWise<span class="sub">// ENERGY DISPATCH · OPS LOG · BUP CSE FEST 2026</span></h1></div>
   </div>
   <div></div>
-  <div class="tape">FIELD LOG №<span id="log-no">—</span><br><span class="d">SHIFT · ON-DUTY OPERATOR</span></div>
+  <div class="tape">FIELD LOG №<span id="log-no">—</span><br><span class="d">SHIFT &middot; <input id="op-name" class="op-input" type="text" spellcheck="false" maxlength="22" placeholder="OPERATOR" value=""></span><br><span class="d">STATION <b>SUB-12 / DHAKA</b></span></div>
 </header>
 <div class="bar">
   <div class="left">
@@ -643,6 +705,7 @@ tr.peak .row-mark{color:var(--mag)}
     <span>RUNS<b id="runs">000</b></span>
     <span>LAST<b id="latest-ms">0</b>ms</span>
     <span>SCN<b id="scenario-tag" style="margin-left:6px">—</b></span>
+    <span>SIM<b id="sim-clock" style="margin-left:6px">H00:00</b></span>
   </div>
   <div class="right">TARIFF SLAB · <b>WEEKDAY PEAK</b></div>
 </div>
@@ -660,6 +723,15 @@ tr.peak .row-mark{color:var(--mag)}
     <span>· LOG EVERY · INTERPRET EVERY · OPTIMIZE EVERY ·</span>
   </div>
 </div>
+<aside class="memo" id="memo">
+  <div class="memo-head">
+    <span class="memo-title">· SHIFT MEMO</span>
+    <button type="button" class="memo-x" id="memo-x" aria-label="Close memo">×</button>
+  </div>
+  <textarea id="memo-body" spellcheck="true" placeholder="jot notes here · saved on this device only"></textarea>
+  <div class="memo-foot"><span id="memo-status">SAVED LOCALLY</span><b id="memo-chars">0</b></div>
+</aside>
+<button type="button" class="memo-toggle" id="memo-toggle" aria-label="Open memo">· MEMO</button>
 <main class="layout">
 <section class="paper">
   <div class="head">
@@ -879,8 +951,27 @@ tr.peak .row-mark{color:var(--mag)}
         <div class="hr-head"><span>· RUN HISTORY</span><span class="meta" id="hist-meta">NO TRANSMISSIONS YET</span></div>
         <div class="hr-strip" id="hr-strip"><div class="hr-empty">// history clears on page refresh&hellip;</div></div>
       </div>
+      <div class="diff-row">
+        <div class="diff-head"><span>· LAST&nbsp;DIFF · <b id="diff-scen">—</b> vs <b id="diff-prev">—</b></span><span class="meta" id="diff-meta">SEND TWICE TO COMPARE</span></div>
+        <div class="diff-grid">
+          <div class="diff-cell"><span class="dl">TOTAL COST</span><span class="dv" id="diff-cost">—</span><em class="dp" id="diff-cost-pct">—</em></div>
+          <div class="diff-cell"><span class="dl">GRID IMPORT</span><span class="dv" id="diff-grid">—</span><em class="dp" id="diff-grid-pct">—</em></div>
+          <div class="diff-cell"><span class="dl">PEAK</span><span class="dv" id="diff-peak">—</span><em class="dp" id="diff-peak-pct">—</em></div>
+          <div class="diff-cell"><span class="dl">DIRECTIVES</span><span class="dv" id="diff-dirs">—</span><em class="dp" id="diff-dirs-pct">—</em></div>
+          <div class="diff-cell"><span class="dl">SOLAR SHARE</span><span class="dv" id="diff-solar">—</span><em class="dp" id="diff-solar-pct">—</em></div>
+          <div class="diff-cell"><span class="dl">LATENCY</span><span class="dv" id="diff-ms">—</span><em class="dp" id="diff-ms-pct">—</em></div>
+        </div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-head"><span>· PRESET COMPARISON</span><span class="meta">3 ATTACHED</span></div>
+        <div class="cmp-grid">
+          <div class="cmp-cell" data-cmp="SAMPLE-01"><b class="cmp-id">SAMPLE-01</b><span class="cmp-tag phos">CLEAN</span><span class="cmp-lbl">COST</span><span class="cmp-v" id="cmp-01-cost">—</span><span class="cmp-lbl">PEAK</span><span class="cmp-v" id="cmp-01-peak">—</span><span class="cmp-lbl">DIRECTIVES</span><span class="cmp-v" id="cmp-01-dir">—</span></div>
+          <div class="cmp-cell" data-cmp="SAMPLE-03"><b class="cmp-id">SAMPLE-03</b><span class="cmp-tag cyan">RESERVE</span><span class="cmp-lbl">COST</span><span class="cmp-v" id="cmp-03-cost">—</span><span class="cmp-lbl">PEAK</span><span class="cmp-v" id="cmp-03-peak">—</span><span class="cmp-lbl">DIRECTIVES</span><span class="cmp-v" id="cmp-03-dir">—</span></div>
+          <div class="cmp-cell" data-cmp="SAMPLE-05"><b class="cmp-id">SAMPLE-05</b><span class="cmp-tag mag">CAP</span><span class="cmp-lbl">COST</span><span class="cmp-v" id="cmp-05-cost">—</span><span class="cmp-lbl">PEAK</span><span class="cmp-v" id="cmp-05-peak">—</span><span class="cmp-lbl">DIRECTIVES</span><span class="cmp-v" id="cmp-05-dir">—</span></div>
+        </div>
+      </div>
       <div class="sys-row">
-        <div class="sys-cell"><span class="sl">SYSTEM</span><span class="sv" id="sys-version">v6.0.0</span></div>
+        <div class="sys-cell"><span class="sl">SYSTEM</span><span class="sv" id="sys-version">v7.0.0</span></div>
         <div class="sys-cell"><span class="sl">UPTIME</span><span class="sv" id="sys-up">00:00:00</span></div>
         <div class="sys-cell"><span class="sl">LAST&nbsp;PAYLOAD</span><span class="sv" id="sys-payload">—</span></div>
         <div class="sys-cell"><span class="sl">LAST&nbsp;RESPONSE</span><span class="sv" id="sys-resp">—</span></div>
@@ -946,6 +1037,19 @@ const el = {
   hrStrip:$('hr-strip'), hrMeta:$('hist-meta'),
   sysUp:$('sys-up'), sysPayload:$('sys-payload'), sysResp:$('sys-resp'),
   sysCache:$('sys-cache'),
+  simClock:$('sim-clock'), opName:$('op-name'),
+  memo:$('memo'), memoToggle:$('memo-toggle'), memoX:$('memo-x'),
+  memoBody:$('memo-body'), memoStatus:$('memo-status'), memoChars:$('memo-chars'),
+  diffScen:$('diff-scen'), diffPrev:$('diff-prev'), diffMeta:$('diff-meta'),
+  diffCost:$('diff-cost'), diffCostP:$('diff-cost-pct'),
+  diffGrid:$('diff-grid'), diffGridP:$('diff-grid-pct'),
+  diffPeak:$('diff-peak'), diffPeakP:$('diff-peak-pct'),
+  diffDirs:$('diff-dirs'), diffDirsP:$('diff-dirs-pct'),
+  diffSolar:$('diff-solar'), diffSolarP:$('diff-solar-pct'),
+  diffMs:$('diff-ms'), diffMsP:$('diff-ms-pct'),
+  cmp01Cost:$('cmp-01-cost'), cmp01Peak:$('cmp-01-peak'), cmp01Dir:$('cmp-01-dir'),
+  cmp03Cost:$('cmp-03-cost'), cmp03Peak:$('cmp-03-peak'), cmp03Dir:$('cmp-03-dir'),
+  cmp05Cost:$('cmp-05-cost'), cmp05Peak:$('cmp-05-peak'), cmp05Dir:$('cmp-05-dir'),
 };
 let chart = null, last = null, stackMode = 'stacked', runCount = 0;
 const safe = (n, d=0) => Number.isFinite(n) ? n : d;
@@ -1143,11 +1247,15 @@ function renderDirectivesDual(body){
     const applies = !!d.applies;
     const wrap = document.createElement('div');
     wrap.className = 'dual' + (applies ? ' applies-y' : ' applies-n');
+    const type = esc(d.directive_type || 'no_op');
+    const glyph = type.replace(/[^a-z0-9_]/gi,'').slice(0,2).toUpperCase() || 'NA';
+    const glyphKind = esc((d.directive_type || 'no_op').replace(/[^a-z0-9_]/gi,'_'));
     wrap.innerHTML = `
       <div class="dual-top">
+        <span class="dual-glyph g-${glyphKind}">${glyph}</span>
         <span class="dual-idx">#${pad2(d.note_index)}</span>
         <span class="dual-status ${applies ? 'on' : 'off'}">${applies ? 'APPLIED' : 'SKIPPED'}</span>
-        <span class="dtype ${esc(d.directive_type)}">${esc(d.directive_type)}</span>
+        <span class="dtype ${type}">${type}</span>
         <span class="dual-struct">${esc(d.structured_adjustment ? JSON.stringify(d.structured_adjustment) : 'null')}</span>
       </div>
       <div class="dual-why">${esc(d.explanation || '—')}</div>
@@ -1320,6 +1428,18 @@ function pushRunHistory(entry){
   });
   el.hrStrip.insertBefore(tick, el.hrStrip.firstChild);
 }
+window.SAMPLES = SAMPLES;
+// Compute the summary metrics used by comparePrev and the cmp-row population.
+function summarize(body, ms){
+  if (!body || typeof body !== 'object') return null;
+  const plan = Array.isArray(body.hourly_plan) ? body.hourly_plan : [];
+  const solar = plan.reduce((s,r) => s + safe(r.solar_used_kwh), 0);
+  const peak = plan.reduce((m,r) => Math.max(m, safe(r.grid_kwh)), 0);
+  const totalDemand = solar + safe(body.total_grid_kwh, 0);
+  const share = totalDemand ? Math.round(100 * solar / totalDemand) : 0;
+  const dirs = Array.isArray(body.directive_interpretation) ? body.directive_interpretation.filter(d => d && d.applies).length : 0;
+  return { cost: safe(body.total_cost_bdt, 0), grid: safe(body.total_grid_kwh, 0), peak, solar: share, dirs, ms: Math.round(ms || body._ms || 0) };
+}
 function updateSysRow(body, ms){
   if (el.sysPayload){
     const notes = (window.__lastNotes || '').slice(0, 60);
@@ -1332,6 +1452,140 @@ function updateSysRow(body, ms){
     const k = __history.length;
     el.sysCache.textContent = k === 0 ? 'COLD' : `WARM · ${k}/24`;
   }
+}
+let __simHour = 0;
+function tickSimClock(){
+  if (!el.simClock) return;
+  __simHour = (__simHour + 0.25) % 24;
+  const h = Math.floor(__simHour);
+  const m = Math.floor((__simHour - h) * 60);
+  el.simClock.textContent = `H${pad2(h)}:${pad2(m)}`;
+  el.simClock.classList.add('live');
+}
+const GLYPH_MAP = {
+  solar_reduction: '☀',
+  minimum_battery_reserve: '◐',
+  no_charge_window: '⚡',
+  no_discharge_window: '⊘',
+  max_grid_window: '⊞',
+  no_op: '∅',
+};
+function comparePrev(body){
+  const prev = last;
+  if (!prev || !body){ return; }
+  // We compare the LAST response before this one with the current one.
+  const before = __history.length >= 2 ? __history[1] : null;
+  if (!before) return;
+  function cell(node, pn, label, prevVal, newVal, lowerBetter){
+    if (!node) return;
+    const baseFmt = (v) => (Number.isFinite(v) ? v : 0);
+    const a = baseFmt(prevVal), b = baseFmt(newVal);
+    const delta = b - a;
+    const pct = a ? (delta / Math.abs(a)) * 100 : 0;
+    let cls = 'flat';
+    if (Math.abs(delta) < 1e-3) cls = 'flat';
+    else if (lowerBetter ? delta < 0 : delta > 0) cls = 'up';
+    else cls = 'down';
+    const sign = delta >= 0 ? '+' : '';
+    if (pn){
+      pn.textContent = `${sign}${delta.toFixed(pct < 10 ? 2 : 1)} · ${sign}${pct.toFixed(1)}%`;
+      pn.className = 'dp ' + cls;
+    }
+    node.textContent = `${fmt(b, 1)}`;
+  }
+  function solarShare(b){
+    const plan = b && Array.isArray(b.hourly_plan) ? b.hourly_plan : [];
+    const sol = plan.reduce((s,r) => s + safe(r.solar_used_kwh), 0);
+    const total = sol + safe(b.total_grid_kwh, 0);
+    return total ? Math.round(100 * sol / total) : 0;
+  }
+  function dirs(b){
+    return Array.isArray(b.directive_interpretation) ? b.directive_interpretation.filter(d => d && d.applies).length : 0;
+  }
+  function peak(b){
+    const plan = Array.isArray(b.hourly_plan) ? b.hourly_plan : [];
+    return plan.reduce((m, r) => Math.max(m, safe(r.grid_kwh)), 0);
+  }
+  function msOf(b){
+    return safe(b._ms, 0);
+  }
+  if (el.diffScen) el.diffScen.textContent = body.scenario_id || 'OPS';
+  if (el.diffPrev) el.diffPrev.textContent = before.scenario || '—';
+  if (el.diffMeta) el.diffMeta.textContent = `#${pad3(before.idx)} → #${pad3(__history[0].idx)}`;
+  // We don't have full bodies for `before`, so use summary fields stored in history.
+  cell(el.diffCost, el.diffCostP, 'cost', before.cost, safe(body.total_cost_bdt,0), true);
+  cell(el.diffGrid, el.diffGridP, 'grid', before.grid, safe(body.total_grid_kwh,0), true);
+  cell(el.diffPeak, el.diffPeakP, 'peak', before.peak || 0, peak(body), true);
+  cell(el.diffDirs, el.diffDirsP, 'dirs', before.dirs || 0, dirs(body), false);
+  cell(el.diffSolar, el.diffSolarP, 'solar', before.solar || 0, solarShare(body), true);
+  cell(el.diffMs, el.diffMsP, 'ms', before.ms, msOf(body), true);
+}
+async function runComparison(){
+  if (!window.SAMPLES){ return; }
+  const samples = Object.keys(window.SAMPLES);
+  let i = 0;
+  for (const sid of samples){
+    const cfg = window.SAMPLES[sid];
+    const cells = { 'SAMPLE-01': [el.cmp01Cost, el.cmp01Peak, el.cmp01Dir],
+                    'SAMPLE-03': [el.cmp03Cost, el.cmp03Peak, el.cmp03Dir],
+                    'SAMPLE-05': [el.cmp05Cost, el.cmp05Peak, el.cmp05Dir] };
+    const targets = cells[sid];
+    if (!targets) continue;
+    const [costNode, peakNode, dirNode] = targets;
+    try {
+      const payload = {
+        scenario_id: sid,
+        operator_notes: cfg.operator_notes || cfg.notes || [],
+        hours: cfg.hours || cfg.payload?.hours,
+        battery: cfg.battery || cfg.payload?.battery,
+      };
+      const t0 = performance.now();
+      const res = await fetch(API, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(payload) });
+      const ms = performance.now() - t0;
+      const b = await res.json();
+      const plan = Array.isArray(b.hourly_plan) ? b.hourly_plan : [];
+      const peak = plan.reduce((m, r) => Math.max(m, safe(r.grid_kwh)), 0);
+      const dirs = Array.isArray(b.directive_interpretation) ? b.directive_interpretation.filter(d => d && d.applies).length : 0;
+      tickValue(costNode, safe(b.total_cost_bdt, 0), 0, 600);
+      tickValue(peakNode, peak, 1, 600);
+      dirNode.textContent = String(dirs);
+    } catch (e){
+      costNode.textContent = '—';
+      peakNode.textContent = '—';
+      dirNode.textContent = '—';
+    }
+    i++;
+    // small stagger so UI doesn't freeze
+    await new Promise(r => setTimeout(r, 80));
+  }
+}
+function setupMemo(){
+  if (!el.memoBody) return;
+  const KEY = 'gridwise.memo.v1';
+  try { el.memoBody.value = localStorage.getItem(KEY) || ''; } catch {}
+  function update(){
+    const n = el.memoBody.value.length;
+    if (el.memoChars) el.memoChars.textContent = String(n);
+    if (el.memoStatus) el.memoStatus.textContent = n ? 'SAVED LOCALLY' : 'EMPTY';
+  }
+  el.memoBody.addEventListener('input', () => {
+    try { localStorage.setItem(KEY, el.memoBody.value); } catch {}
+    if (el.memoStatus) el.memoStatus.textContent = 'WRITING…';
+    clearTimeout(window.__memoT);
+    window.__memoT = setTimeout(() => { if (el.memoStatus) el.memoStatus.textContent = 'SAVED LOCALLY'; }, 400);
+    update();
+  });
+  update();
+  if (el.memoX) el.memoX.addEventListener('click', () => el.memo && el.memo.classList.add('hidden'));
+  if (el.memoToggle) el.memoToggle.addEventListener('click', () => el.memo && el.memo.classList.remove('hidden'));
+}
+function setupOperatorName(){
+  if (!el.opName) return;
+  const KEY = 'gridwise.op.v1';
+  try { el.opName.value = localStorage.getItem(KEY) || ''; } catch {}
+  el.opName.addEventListener('input', () => {
+    try { localStorage.setItem(KEY, el.opName.value); } catch {}
+  });
 }
 function renderPlan(body){
   const plan = Array.isArray(body.hourly_plan) ? body.hourly_plan : [];
@@ -1480,7 +1734,9 @@ async function optimize(){
       throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail));
     }
     if (!body || typeof body !== 'object') throw new Error('EMPTY RESPONSE');
+    body._ms = ms;
     last = body;
+    const sum = summarize(body, ms);
     runCount++;
     el.runs.textContent = pad3(runCount);
     el.latestMs.textContent = Math.round(ms);
@@ -1498,11 +1754,25 @@ async function optimize(){
       idx: runCount,
       ts: new Date().toLocaleTimeString('en-GB'),
       scenario: body.scenario_id || 'OPS',
-      cost: safe(body.total_cost_bdt, 0),
-      grid: safe(body.total_grid_kwh, 0),
+      cost: sum.cost,
+      grid: sum.grid,
+      peak: sum.peak,
+      solar: sum.solar,
+      dirs: sum.dirs,
       ms: Math.round(ms),
       kind: 'ok',
     });
+    comparePrev(body);
+    if (sum){
+      // Mirror the current scenario into the matching cmp-cell so the comparison strip is live.
+      const map = { 'SAMPLE-01': [el.cmp01Cost, el.cmp01Peak, el.cmp01Dir], 'SAMPLE-03': [el.cmp03Cost, el.cmp03Peak, el.cmp03Dir], 'SAMPLE-05': [el.cmp05Cost, el.cmp05Peak, el.cmp05Dir] };
+      const t = map[body.scenario_id];
+      if (t){
+        tickValue(t[0], sum.cost, 0, 500);
+        tickValue(t[1], sum.peak, 1, 500);
+        t[2].textContent = String(sum.dirs);
+      }
+    }
     updateSysRow(body, ms);
     setBanner(`TRANSMIT OK - <b>${fmt(body.total_cost_bdt,2)} BDT</b> - GRID <b>${fmt(body.total_grid_kwh,1)} kWh</b> - <b>${Math.round(ms)}ms</b>`, 'ok');
     el.footState.textContent = 'OPTIMIZED - READY';
@@ -1599,6 +1869,14 @@ function wire(){
   tickSysUptime();
   setInterval(tickSysUptime, 1000);
   updateSysRow(null, 0);
+  // V7 polish layer: paper clock + memo sticky + operator name + comparison sweep.
+  setupMemo();
+  setupOperatorName();
+  tickSimClock();
+  setInterval(tickSimClock, 1500);
+  // Pre-populate the comparison strip so the page never shows 3 dashes on first paint.
+  runComparison();
+  setInterval(() => runComparison(), 60000);
 }
 document.addEventListener('DOMContentLoaded', wire);
 })();
