@@ -1,337 +1,1274 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GridWise — Operator Console</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" />
-  <style>
-    :root {
-      --bg: #0f1419;
-      --panel: #1a2030;
-      --panel-2: #232a3d;
-      --ink: #e7ecf3;
-      --ink-dim: #9aa3b2;
-      --accent: #4dd0e1;
-      --accent-2: #ffb74d;
-      --good: #66bb6a;
-      --bad: #ef5350;
-      --warn: #ffa726;
-      --border: #2c3447;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    }
-    * { box-sizing: border-box; }
-    html, body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { margin: 0; padding: 24px; max-width: 1320px; margin-inline: auto; }
-    h1 { margin: 0 0 4px; font-size: 24px; letter-spacing: 0.2px; }
-    h1 .badge { font-size: 11px; background: var(--accent); color: #002733; padding: 2px 8px; border-radius: 10px; vertical-align: middle; margin-left: 8px; }
-    .sub { color: var(--ink-dim); margin-bottom: 24px; font-size: 13px; }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GridWise — operator console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-900:#070B12;
+    --ink-800:#0B1220;
+    --ink-700:#111A2B;
+    --ink-600:#17223A;
+    --line:#1F2C45;
+    --line-soft:#16203400;
+    --text:#E8EDF6;
+    --text-dim:#8895AE;
+    --text-faint:#5C6880;
 
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 960px) { .row { grid-template-columns: 1fr; } }
+    --solar:#F2B347;
+    --battery:#3FD9C0;
+    --grid:#FF6584;
+    --charge:#2C7F75;
+    --soc:#9C8CFF;
+    --ok:#4ADE80;
+    --bad:#FF6584;
 
-    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
-    .panel h2 { margin: 0 0 12px; font-size: 14px; color: var(--accent); text-transform: uppercase; letter-spacing: 1.4px; }
+    --sans:"Space Grotesk", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-    .samples { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-    .samples button { background: var(--panel-2); color: var(--ink); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; }
-    .samples button:hover { border-color: var(--accent); }
+    --r:14px;
+    --r-sm:8px;
+  }
 
-    label { display: block; font-size: 12px; color: var(--ink-dim); margin: 8px 0 4px; }
-    textarea { width: 100%; min-height: 80px; background: #0b0f17; color: var(--ink); border: 1px solid var(--border); border-radius: 6px; padding: 10px; font-family: var(--mono); font-size: 12.5px; resize: vertical; }
-    textarea#hours-json { min-height: 220px; }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(63,217,192,.07), transparent 60%),
+      radial-gradient(900px 500px at 0% 0%, rgba(242,179,71,.05), transparent 55%),
+      var(--ink-900);
+    color:var(--text);
+    font-family:var(--sans);
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  a{color:var(--battery)}
+  ::selection{background:rgba(63,217,192,.28)}
+  :focus-visible{outline:2px solid var(--battery); outline-offset:2px; border-radius:4px}
 
-    .actions { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
-    button.primary { background: var(--accent); color: #002733; border: 0; padding: 10px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-    button.primary:disabled { opacity: 0.5; cursor: wait; }
-    button.secondary { background: var(--panel-2); color: var(--ink); border: 1px solid var(--border); padding: 10px 18px; border-radius: 6px; cursor: pointer; }
-    .status { font-family: var(--mono); font-size: 12px; color: var(--ink-dim); margin-left: auto; }
-    .status.err { color: var(--bad); }
-    .status.ok { color: var(--good); }
+  .wrap{max-width:1360px;margin:0 auto;padding:22px 22px 60px}
 
-    .totals { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
-    .totals .card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
-    .totals .label { font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 1px; }
-    .totals .value { font-size: 20px; margin-top: 4px; font-weight: 600; }
-    .totals .unit { font-size: 12px; color: var(--ink-dim); margin-left: 4px; font-weight: 400; }
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+    padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:22px;
+  }
+  .brand{display:flex;align-items:center;gap:12px;margin-right:auto}
+  .brand svg{display:block}
+  .brand h1{
+    font-size:19px;font-weight:600;margin:0;letter-spacing:-.01em;
+  }
+  .brand p{margin:0;font-size:12.5px;color:var(--text-faint)}
 
-    .summary { margin-top: 14px; padding: 12px 14px; background: #0b0f17; border: 1px dashed var(--border); border-radius: 6px; font-family: var(--mono); font-size: 12.5px; color: var(--ink-dim); }
+  .endpoint{display:flex;align-items:center;gap:8px}
+  .endpoint label{font-size:12.5px;color:var(--text-dim)}
+  .endpoint input{
+    width:270px;background:var(--ink-800);border:1px solid var(--line);color:var(--text);
+    font-family:var(--mono);font-size:12px;padding:8px 10px;border-radius:var(--r-sm);
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--text-faint);flex:none}
+  .dot.live{background:var(--ok);box-shadow:0 0 0 4px rgba(74,222,128,.14)}
+  .dot.down{background:var(--bad);box-shadow:0 0 0 4px rgba(255,101,132,.14)}
+  .health{font-size:12px;color:var(--text-dim);font-family:var(--mono);min-width:92px}
 
-    .directives { margin-top: 14px; }
-    .directives table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-    .directives th, .directives td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
-    .directives th { color: var(--ink-dim); font-weight: 500; text-transform: uppercase; font-size: 10.5px; letter-spacing: 1px; }
-    .tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-family: var(--mono); }
-    .tag.applies { background: rgba(102,187,106,0.18); color: var(--good); }
-    .tag.skip { background: rgba(154,163,178,0.18); color: var(--ink-dim); }
+  /* ---------- layout ---------- */
+  .cols{display:grid;grid-template-columns:352px minmax(0,1fr);gap:22px;align-items:start}
+  @media (max-width:1040px){ .cols{grid-template-columns:1fr} }
 
-    .plan { margin-top: 18px; }
-    .plan .scroll { max-height: 360px; overflow: auto; border: 1px solid var(--border); border-radius: 6px; }
-    .plan table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
-    .plan th, .plan td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--border); }
-    .plan th { background: var(--panel-2); position: sticky; top: 0; color: var(--ink-dim); font-weight: 500; text-align: right; }
-    .plan th:first-child, .plan td:first-child { text-align: left; }
-    .action-charge { color: var(--accent); }
-    .action-discharge { color: var(--accent-2); }
-    .action-idle { color: var(--ink-dim); }
+  .panel{
+    background:linear-gradient(180deg,var(--ink-800),var(--ink-900));
+    border:1px solid var(--line);border-radius:var(--r);
+  }
+  .panel + .panel{margin-top:18px}
+  .panel-head{
+    display:flex;align-items:baseline;gap:10px;padding:16px 18px 0;
+  }
+  .panel-head h2{margin:0;font-size:14.5px;font-weight:600;letter-spacing:-.005em}
+  .panel-head .note{margin-left:auto;font-size:12px;color:var(--text-faint);font-family:var(--mono)}
+  .panel-body{padding:14px 18px 18px}
 
-    .chart-wrap { margin-top: 16px; height: 320px; position: relative; }
+  /* ---------- controls ---------- */
+  .steps{counter-reset:step}
+  .step{padding:16px 18px;border-bottom:1px solid var(--line)}
+  .step:last-of-type{border-bottom:0}
+  .step > h3{
+    margin:0 0 10px;font-size:13px;font-weight:500;color:var(--text-dim);
+    display:flex;align-items:center;gap:9px;
+  }
+  .step > h3::before{
+    counter-increment:step;content:counter(step);
+    font-family:var(--mono);font-size:10.5px;color:var(--ink-900);background:var(--text-dim);
+    width:17px;height:17px;border-radius:5px;display:grid;place-items:center;flex:none;
+  }
 
-    footer { margin-top: 28px; color: var(--ink-dim); font-size: 12px; text-align: center; }
-    code.inline { font-family: var(--mono); background: var(--panel-2); padding: 1px 6px; border-radius: 4px; }
-  </style>
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{
+    background:var(--ink-700);border:1px solid var(--line);color:var(--text);
+    padding:7px 11px;border-radius:999px;font:inherit;font-size:12.5px;cursor:pointer;
+    transition:border-color .12s, background .12s;
+  }
+  .chip:hover{border-color:var(--battery)}
+  .chip[aria-pressed="true"]{background:rgba(63,217,192,.14);border-color:var(--battery);color:#BDF6EC}
+  .chip small{color:var(--text-faint);font-family:var(--mono);font-size:11px;margin-left:5px}
+
+  textarea{
+    width:100%;background:var(--ink-900);color:var(--text);border:1px solid var(--line);
+    border-radius:var(--r-sm);padding:11px 12px;font-family:var(--mono);font-size:12.5px;
+    line-height:1.65;resize:vertical;
+  }
+  textarea:focus{border-color:var(--battery);outline:none}
+  #notes{min-height:104px}
+  #hours-json{min-height:180px;font-size:11.5px;line-height:1.5}
+
+  .meta-row{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:11.5px;font-family:var(--mono);color:var(--text-faint)}
+  .meta-row .bad{color:var(--bad)}
+  .meta-row .ok{color:var(--ok)}
+  .meta-row button{
+    margin-left:auto;background:none;border:0;color:var(--text-dim);font:inherit;
+    font-size:11.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:0;
+  }
+  .meta-row button:hover{color:var(--battery)}
+
+  .snips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+  .snip{
+    background:transparent;border:1px dashed var(--line);color:var(--text-dim);
+    padding:5px 9px;border-radius:6px;font:inherit;font-size:11.5px;cursor:pointer;
+  }
+  .snip:hover{border-color:var(--battery);color:var(--text);border-style:solid}
+
+  .run{padding:16px 18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .btn{
+    font:inherit;font-size:14px;font-weight:500;border-radius:var(--r-sm);cursor:pointer;
+    padding:11px 20px;border:1px solid transparent;transition:filter .12s;
+  }
+  .btn:disabled{opacity:.55;cursor:progress}
+  .btn-primary{background:var(--battery);color:#04221D;font-weight:600}
+  .btn-primary:hover:not(:disabled){filter:brightness(1.08)}
+  .btn-ghost{background:var(--ink-700);border-color:var(--line);color:var(--text)}
+  .btn-ghost:hover{border-color:var(--text-dim)}
+  .kbd{font-family:var(--mono);font-size:10.5px;color:var(--text-faint);margin-left:auto}
+
+  /* ---------- banner ---------- */
+  .banner{
+    display:none;margin-bottom:18px;padding:13px 16px;border-radius:var(--r-sm);
+    border:1px solid rgba(255,101,132,.4);background:rgba(255,101,132,.09);
+    font-size:13.5px;color:#FFC6D2;
+  }
+  .banner.show{display:block}
+  .banner b{color:#fff;font-weight:600}
+  .banner code{font-family:var(--mono);font-size:12px}
+
+  /* ---------- hero readout ---------- */
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border-radius:var(--r);overflow:hidden;border:1px solid var(--line)}
+  @media (max-width:760px){ .stats{grid-template-columns:repeat(2,minmax(0,1fr))} }
+  .stat{background:var(--ink-800);padding:15px 17px 16px}
+  .stat .k{font-size:12px;color:var(--text-dim)}
+  .stat .v{font-family:var(--mono);font-size:26px;font-weight:500;letter-spacing:-.02em;margin-top:5px;line-height:1.1}
+  .stat .v small{font-size:12.5px;color:var(--text-faint);font-weight:400;margin-left:5px;letter-spacing:0}
+  .stat .sub{font-size:11.5px;color:var(--text-faint);font-family:var(--mono);margin-top:4px}
+  .stat.saving .v{color:var(--ok)}
+  .stat.saving.negative .v{color:var(--grid)}
+
+  /* ---------- chart ---------- */
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text-dim);margin-left:auto}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:baseline}
+
+  .band-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text-faint);font-family:var(--mono);margin:0 0 5px}
+  svg.viz{display:block;width:100%;height:auto;overflow:visible}
+  svg.viz .hit{fill:transparent;cursor:crosshair}
+  svg.viz .hit:hover{fill:rgba(255,255,255,.035)}
+  svg.viz text{font-family:var(--mono);fill:var(--text-faint)}
+
+  .readout{
+    display:flex;gap:0;flex-wrap:wrap;margin-top:12px;border:1px solid var(--line);
+    border-radius:var(--r-sm);overflow:hidden;background:var(--ink-900);
+  }
+  .readout div{padding:9px 13px;border-right:1px solid var(--line);flex:1 1 auto;min-width:104px}
+  .readout div:last-child{border-right:0}
+  .readout .rk{font-size:10.5px;color:var(--text-faint)}
+  .readout .rv{font-family:var(--mono);font-size:14px;margin-top:2px}
+
+  /* ---------- directives ---------- */
+  .dirs{display:grid;gap:11px}
+  .dir{
+    border:1px solid var(--line);border-left:3px solid var(--text-faint);
+    border-radius:var(--r-sm);padding:12px 14px;background:var(--ink-800);
+  }
+  .dir.on{border-left-color:var(--battery)}
+  .dir.off{opacity:.62}
+  .dir .dtop{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:6px}
+  .dir .dtype{font-family:var(--mono);font-size:12.5px;color:var(--battery)}
+  .dir.off .dtype{color:var(--text-dim)}
+  .dir .dstate{font-size:10.5px;font-family:var(--mono);padding:2px 7px;border-radius:999px;background:rgba(63,217,192,.15);color:var(--battery)}
+  .dir.off .dstate{background:rgba(136,149,174,.15);color:var(--text-dim)}
+  .dir .didx{font-size:11px;color:var(--text-faint);font-family:var(--mono);margin-left:auto}
+  .dir .dquote{font-size:13px;color:var(--text-dim);font-style:italic;margin:0 0 7px}
+  .dir .dadj{font-family:var(--mono);font-size:12px;color:var(--text);background:var(--ink-900);border:1px solid var(--line);border-radius:6px;padding:7px 9px;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+  .dir .dexp{font-size:12.5px;color:var(--text-dim);margin:7px 0 0}
+
+  /* ---------- table ---------- */
+  .tablewrap{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:var(--r-sm)}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
+  thead th{
+    position:sticky;top:0;background:var(--ink-700);color:var(--text-dim);font-weight:500;
+    text-align:right;padding:9px 12px;border-bottom:1px solid var(--line);font-size:11px;white-space:nowrap;z-index:1;
+  }
+  tbody td{padding:7px 12px;text-align:right;border-bottom:1px solid rgba(31,44,69,.6);white-space:nowrap}
+  thead th:first-child, tbody td:first-child{text-align:left}
+  tbody tr.on{background:rgba(63,217,192,.09)}
+  tbody tr.peak td{color:#FFC6D2}
+  .act-charge{color:var(--battery)}
+  .act-discharge{color:var(--solar)}
+  .act-idle{color:var(--text-faint)}
+  .bar{display:inline-block;height:3px;background:var(--grid);border-radius:2px;vertical-align:middle;margin-left:7px;opacity:.7}
+
+  .empty{
+    padding:34px 18px;text-align:center;color:var(--text-dim);font-size:13.5px;
+    border:1px dashed var(--line);border-radius:var(--r-sm);
+  }
+  .empty b{display:block;color:var(--text);font-size:15px;font-weight:500;margin-bottom:5px}
+
+  .summary{
+    font-size:13.5px;line-height:1.6;color:var(--text);background:var(--ink-900);
+    border:1px solid var(--line);border-left:3px solid var(--solar);
+    border-radius:var(--r-sm);padding:12px 15px;margin-bottom:16px;
+  }
+
+  footer{margin-top:28px;font-size:12px;color:var(--text-faint);text-align:center}
+  footer code{font-family:var(--mono)}
+
+  .hidden{display:none !important}
+
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important; animation:none !important} }
+</style>
 </head>
 <body>
-  <h1>GridWise <span class="badge">operator console</span></h1>
-  <div class="sub">LLM-assisted 24-hour battery + grid schedule. Pick a sample or paste your own, edit the notes, then hit <code class="inline">Optimize</code>.</div>
+<div class="wrap">
 
-  <div class="row">
-    <!-- LEFT: input -->
-    <section class="panel">
-      <h2>Scenario</h2>
-      <div class="samples">
-        <button type="button" data-sample="SAMPLE-01">SAMPLE-01 · Solar cleaning</button>
-        <button type="button" data-sample="SAMPLE-03">SAMPLE-03 · Reserve 50%</button>
-        <button type="button" data-sample="SAMPLE-05">SAMPLE-05 · Feeder cap</button>
+  <header class="topbar">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
+        <rect x="1" y="1" width="28" height="28" rx="8" fill="#0B1220" stroke="#1F2C45"/>
+        <path d="M9 22 L9 13 M14 22 L14 8 M19 22 L19 16 M24 22 L24 11" stroke="#3FD9C0" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+        <path d="M17 5 L10 17 h5 l-2 8 8 -12 h-5 z" fill="#F2B347"/>
+      </svg>
+      <div>
+        <h1>GridWise</h1>
+        <p>Turn operator notes into a costed 24-hour battery plan</p>
       </div>
+    </div>
+    <div class="endpoint">
+      <label for="api">API</label>
+      <input id="api" type="text" spellcheck="false" autocomplete="off" />
+      <span class="dot" id="dot"></span>
+      <span class="health" id="health">not checked</span>
+    </div>
+  </header>
 
-      <label for="notes">Operator notes (one per line, 1–3 lines)</label>
-      <textarea id="notes" placeholder="e.g. Wash panels from noon to 2 PM; treat solar as 25%."></textarea>
+  <div id="banner" class="banner" role="alert"></div>
 
-      <label for="hours-json">Hours + battery JSON</label>
-      <textarea id="hours-json" spellcheck="false"></textarea>
+  <div class="cols">
 
-      <div class="actions">
-        <button id="optimize" class="primary" type="button">Optimize</button>
-        <button id="reset" class="secondary" type="button">Reset</button>
-        <span id="status" class="status">idle</span>
+    <!-- ====== CONTROLS ====== -->
+    <section class="panel">
+      <div class="steps">
+
+        <div class="step">
+          <h3>Load a scenario</h3>
+          <div class="chips" id="samples">
+            <button class="chip" type="button" data-sample="SAMPLE-01" aria-pressed="false">Panel cleaning <small>01</small></button>
+            <button class="chip" type="button" data-sample="SAMPLE-03" aria-pressed="false">Evening reserve <small>03</small></button>
+            <button class="chip" type="button" data-sample="SAMPLE-05" aria-pressed="false">Feeder cap <small>05</small></button>
+          </div>
+        </div>
+
+        <div class="step">
+          <h3>Write the operator notes</h3>
+          <div class="snips">
+            <button class="snip" type="button" data-snip="Facilities will wash the rooftop solar panels from noon until 2 PM. Treat usable solar as roughly 25% of forecast.">solar cut</button>
+            <button class="snip" type="button" data-snip="Keep at least 50% of battery capacity stored from 6 PM until 9 PM for emergency operations.">reserve</button>
+            <button class="snip" type="button" data-snip="Do not charge the battery between 5 PM and 9 PM.">no charge</button>
+            <button class="snip" type="button" data-snip="From 6 PM until 9 PM, grid import must not exceed 155 kWh in any hour.">grid cap</button>
+            <button class="snip" type="button" data-snip="The sports office moved next month's registration deadline.">irrelevant</button>
+          </div>
+          <textarea id="notes" placeholder="One instruction per line, in plain English. Up to three lines."></textarea>
+          <div class="meta-row">
+            <span id="notes-count">0 of 3 lines</span>
+            <button type="button" id="clear-notes">Clear</button>
+          </div>
+        </div>
+
+        <div class="step">
+          <h3>Check the day's data</h3>
+          <textarea id="hours-json" spellcheck="false" aria-label="Hours and battery JSON"></textarea>
+          <div class="meta-row">
+            <span id="json-state">waiting</span>
+            <button type="button" id="reformat">Reformat</button>
+          </div>
+        </div>
+
+        <div class="run">
+          <button class="btn btn-primary" type="button" id="optimize">Optimize</button>
+          <button class="btn btn-ghost" type="button" id="preview">Preview without battery</button>
+          <span class="kbd">Ctrl + Enter</span>
+        </div>
       </div>
     </section>
 
-    <!-- RIGHT: results -->
-    <section class="panel">
-      <h2>Result</h2>
-      <div id="empty" class="summary">No run yet. Hit Optimize to see the 24-hour schedule.</div>
-
-      <div id="totals" class="totals" style="display:none">
-        <div class="card"><div class="label">Total cost</div><div class="value" id="t-cost">–</div></div>
-        <div class="card"><div class="label">Grid kWh</div><div class="value" id="t-grid">–</div></div>
-        <div class="card"><div class="label">Peak hour</div><div class="value" id="t-peak">–</div></div>
-        <div class="card"><div class="label">Directives</div><div class="value" id="t-dir">–</div></div>
+    <!-- ====== RESULTS ====== -->
+    <div>
+      <div class="stats" id="stats">
+        <div class="stat"><div class="k">Day cost</div><div class="v" id="s-cost">—</div><div class="sub" id="s-cost-sub">run to see</div></div>
+        <div class="stat"><div class="k">Imported from grid</div><div class="v" id="s-grid">—</div><div class="sub" id="s-grid-sub">&nbsp;</div></div>
+        <div class="stat"><div class="k">Worst import hour</div><div class="v" id="s-peak">—</div><div class="sub" id="s-peak-sub">&nbsp;</div></div>
+        <div class="stat saving"><div class="k">Saved by the battery</div><div class="v" id="s-save">—</div><div class="sub" id="s-save-sub">vs solar-only day</div></div>
       </div>
 
-      <div id="summary" class="summary" style="display:none"></div>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>The day, hour by hour</h2>
+          <div class="legend">
+            <span><i style="background:var(--solar)"></i>solar used</span>
+            <span><i style="background:var(--battery)"></i>battery out</span>
+            <span><i style="background:var(--grid)"></i>grid import</span>
+            <span><i style="background:var(--charge)"></i>charging</span>
+            <span><i style="background:var(--soc)"></i>stored energy</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div id="viz-empty" class="empty">
+            <b>Nothing scheduled yet</b>
+            Load a scenario on the left and press Optimize. The strip below shows where every kilowatt-hour comes from, and what the tariff is doing while it happens.
+          </div>
+          <div id="viz-wrap" class="hidden">
+            <div class="band-label"><span>tariff, cheap to expensive</span><span id="tariff-range">&nbsp;</span></div>
+            <svg class="viz" id="tariff-svg" viewBox="0 0 960 22" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <svg class="viz" id="chart" viewBox="0 0 960 330" role="img" aria-label="Hourly energy sources and battery state of charge"></svg>
+            <div class="readout" id="readout"></div>
+          </div>
+        </div>
+      </section>
 
-      <div class="directives" id="directives-wrap" style="display:none">
-        <table>
-          <thead><tr><th>#</th><th>Applies</th><th>Type</th><th>Structured adjustment</th><th>Explanation</th></tr></thead>
-          <tbody id="directives-body"></tbody>
-        </table>
-      </div>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>What the notes were understood to mean</h2>
+          <span class="note" id="dir-count">&nbsp;</span>
+        </div>
+        <div class="panel-body">
+          <div id="sum-box" class="summary hidden"></div>
+          <div id="dirs" class="dirs"></div>
+          <div id="dirs-empty" class="empty">Each note is read once, turned into a machine-checkable rule, and shown here with the exact numbers that went to the solver.</div>
+        </div>
+      </section>
 
-      <div class="chart-wrap"><canvas id="chart"></canvas></div>
-    </section>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Hourly plan</h2>
+          <span class="note"><button type="button" id="csv" style="background:none;border:0;color:var(--text-dim);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:0">Download CSV</button></span>
+        </div>
+        <div class="panel-body">
+          <div class="tablewrap">
+            <table>
+              <thead><tr>
+                <th>Hour</th><th>Demand</th><th>Solar</th><th>Battery</th><th>Grid</th><th>Tariff</th><th>Cost</th><th>Stored</th>
+              </tr></thead>
+              <tbody id="plan-body">
+                <tr><td colspan="8" style="text-align:center;color:var(--text-faint);padding:22px">no plan yet</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
   </div>
 
-  <div class="row" style="margin-top:20px">
-    <section class="panel plan">
-      <h2>Hourly plan</h2>
-      <div class="scroll">
-        <table>
-          <thead><tr>
-            <th>Hour</th><th>Demand</th><th>Solar used</th><th>Battery</th><th>Grid</th><th>Tariff</th><th>Cost</th><th>Battery kWh</th>
-          </tr></thead>
-          <tbody id="plan-body"></tbody>
-        </table>
-      </div>
-    </section>
-  </div>
+  <footer>POST <code>/optimize-energy</code> — GridWise, BUP CSE Fest 2026</footer>
+</div>
 
-  <footer>POST <code class="inline">/optimize-energy</code> · GridWise prototype</footer>
+<script>
+"use strict";
+(function () {
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.7/chart.umd.min.js"></script>
-  <script>
-    // ----- Embedded samples (compact JSON) -----
-    const SAMPLES = {
-      "SAMPLE-01": {"scenario_id":"SAMPLE-01","operator_notes":["Facilities will wash the rooftop solar panels from noon until 2 PM. During cleaning, usable solar should be treated as roughly 25% of the forecast.","The sports office moved next month's registration deadline."],"hours":[{"hour":0,"demand_kwh":90,"solar_kwh":0,"tariff_bdt_per_kwh":6},{"hour":1,"demand_kwh":85,"solar_kwh":0,"tariff_bdt_per_kwh":6},{"hour":2,"demand_kwh":80,"solar_kwh":0,"tariff_bdt_per_kwh":5},{"hour":3,"demand_kwh":80,"solar_kwh":0,"tariff_bdt_per_kwh":5},{"hour":4,"demand_kwh":85,"solar_kwh":0,"tariff_bdt_per_kwh":5},{"hour":5,"demand_kwh":95,"solar_kwh":0,"tariff_bdt_per_kwh":6},{"hour":6,"demand_kwh":110,"solar_kwh":5,"tariff_bdt_per_kwh":8},{"hour":7,"demand_kwh":130,"solar_kwh":20,"tariff_bdt_per_kwh":10},{"hour":8,"demand_kwh":150,"solar_kwh":50,"tariff_bdt_per_kwh":12},{"hour":9,"demand_kwh":165,"solar_kwh":90,"tariff_bdt_per_kwh":14},{"hour":10,"demand_kwh":175,"solar_kwh":130,"tariff_bdt_per_kwh":16},{"hour":11,"demand_kwh":180,"solar_kwh":160,"tariff_bdt_per_kwh":16},{"hour":12,"demand_kwh":185,"solar_kwh":180,"tariff_bdt_per_kwh":15},{"hour":13,"demand_kwh":180,"solar_kwh":170,"tariff_bdt_per_kwh":14},{"hour":14,"demand_kwh":170,"solar_kwh":140,"tariff_bdt_per_kwh":13},{"hour":15,"demand_kwh":165,"solar_kwh":90,"tariff_bdt_per_kwh":14},{"hour":16,"demand_kwh":170,"solar_kwh":45,"tariff_bdt_per_kwh":18},{"hour":17,"demand_kwh":185,"solar_kwh":10,"tariff_bdt_per_kwh":22},{"hour":18,"demand_kwh":205,"solar_kwh":0,"tariff_bdt_per_kwh":28},{"hour":19,"demand_kwh":215,"solar_kwh":0,"tariff_bdt_per_kwh":30},{"hour":20,"demand_kwh":205,"solar_kwh":0,"tariff_bdt_per_kwh":26},{"hour":21,"demand_kwh":175,"solar_kwh":0,"tariff_bdt_per_kwh":18},{"hour":22,"demand_kwh":135,"solar_kwh":0,"tariff_bdt_per_kwh":10},{"hour":23,"demand_kwh":105,"solar_kwh":0,"tariff_bdt_per_kwh":7}],"battery":{"capacity_kwh":220,"initial_energy_kwh":110,"minimum_energy_kwh":40,"max_charge_kwh_per_hour":50,"max_discharge_kwh_per_hour":50}},
-      "SAMPLE-03": {"scenario_id":"SAMPLE-03","operator_notes":["Keep at least 50% of the battery capacity stored in the battery from 6 PM until 9 PM for emergency operations."],"hours":[{"hour":0,"demand_kwh":90,"solar_kwh":0,"tariff_bdt_per_kwh":6},{"hour":1,"demand_kwh":85,"solar_kwh":0,"tariff_bdt_per_kwh":6},{"hour":2,"demand_kwh":80,"solar_kwh":0,"tariff_bdt_per_kwh":5},{"hour":3,"demand_kwh":80,"solar_kwh":0,"tariff_bdt_per_kwh":5},{"hour":4,"demand_kwh":85,"solar_kwh":0,"tariff_bdt_per_kwh":5},{"hour":5,"demand_kwh":95,"solar_kwh":0,"tariff_bdt_per_kwh":6},{"hour":6,"demand_kwh":110,"solar_kwh":5,"tariff_bdt_per_kwh":8},{"hour":7,"demand_kwh":130,"solar_kwh":20,"tariff_bdt_per_kwh":10},{"hour":8,"demand_kwh":150,"solar_kwh":50,"tariff_bdt_per_kwh":12},{"hour":9,"demand_kwh":165,"solar_kwh":90,"tariff_bdt_per_kwh":14},{"hour":10,"demand_kwh":175,"solar_kwh":130,"tariff_bdt_per_kwh":16},{"hour":11,"demand_kwh":180,"solar_kwh":160,"tariff_bdt_per_kwh":16},{"hour":12,"demand_kwh":185,"solar_kwh":180,"tariff_bdt_per_kwh":15},{"hour":13,"demand_kwh":180,"solar_kwh":170,"tariff_bdt_per_kwh":14},{"hour":14,"demand_kwh":170,"solar_kwh":140,"tariff_bdt_per_kwh":13},{"hour":15,"demand_kwh":165,"solar_kwh":90,"tariff_bdt_per_kwh":14},{"hour":16,"demand_kwh":170,"solar_kwh":45,"tariff_bdt_per_kwh":18},{"hour":17,"demand_kwh":185,"solar_kwh":10,"tariff_bdt_per_kwh":22},{"hour":18,"demand_kwh":205,"solar_kwh":0,"tariff_bdt_per_kwh":28},{"hour":19,"demand_kwh":215,"solar_kwh":0,"tariff_bdt_per_kwh":30},{"hour":20,"demand_kwh":205,"solar_kwh":0,"tariff_bdt_per_kwh":26},{"hour":21,"demand_kwh":175,"solar_kwh":0,"tariff_bdt_per_kwh":18},{"hour":22,"demand_kwh":135,"solar_kwh":0,"tariff_bdt_per_kwh":10},{"hour":23,"demand_kwh":105,"solar_kwh":0,"tariff_bdt_per_kwh":7}],"battery":{"capacity_kwh":200,"initial_energy_kwh":120,"minimum_energy_kwh":40,"max_charge_kwh_per_hour":50,"max_discharge_kwh_per_hour":50}},
-      "SAMPLE-05": {"scenario_id":"SAMPLE-05","operator_notes":["From 6 PM until 9 PM, campus grid import must not exceed 155 kWh in any hour because the feeder is operating under a temporary limit."],"hours":[{"hour":0,"demand_kwh":90,"solar_kwh":0,"tariff_bdt_per_kwh":6},{"hour":1,"demand_kwh":85,"solar_kwh":0,"tariff_bdt_per_kwh":6},{"hour":2,"demand_kwh":80,"solar_kwh":0,"tariff_bdt_per_kwh":5},{"hour":3,"demand_kwh":80,"solar_kwh":0,"tariff_bdt_per_kwh":5},{"hour":4,"demand_kwh":85,"solar_kwh":0,"tariff_bdt_per_kwh":5},{"hour":5,"demand_kwh":95,"solar_kwh":0,"tariff_bdt_per_kwh":6},{"hour":6,"demand_kwh":110,"solar_kwh":5,"tariff_bdt_per_kwh":8},{"hour":7,"demand_kwh":130,"solar_kwh":20,"tariff_bdt_per_kwh":10},{"hour":8,"demand_kwh":150,"solar_kwh":50,"tariff_bdt_per_kwh":12},{"hour":9,"demand_kwh":165,"solar_kwh":90,"tariff_bdt_per_kwh":14},{"hour":10,"demand_kwh":175,"solar_kwh":130,"tariff_bdt_per_kwh":16},{"hour":11,"demand_kwh":180,"solar_kwh":160,"tariff_bdt_per_kwh":16},{"hour":12,"demand_kwh":185,"solar_kwh":180,"tariff_bdt_per_kwh":15},{"hour":13,"demand_kwh":180,"solar_kwh":170,"tariff_bdt_per_kwh":14},{"hour":14,"demand_kwh":170,"solar_kwh":140,"tariff_bdt_per_kwh":13},{"hour":15,"demand_kwh":165,"solar_kwh":90,"tariff_bdt_per_kwh":14},{"hour":16,"demand_kwh":170,"solar_kwh":45,"tariff_bdt_per_kwh":18},{"hour":17,"demand_kwh":185,"solar_kwh":10,"tariff_bdt_per_kwh":22},{"hour":18,"demand_kwh":205,"solar_kwh":0,"tariff_bdt_per_kwh":28},{"hour":19,"demand_kwh":215,"solar_kwh":0,"tariff_bdt_per_kwh":30},{"hour":20,"demand_kwh":205,"solar_kwh":0,"tariff_bdt_per_kwh":26},{"hour":21,"demand_kwh":175,"solar_kwh":0,"tariff_bdt_per_kwh":18},{"hour":22,"demand_kwh":135,"solar_kwh":0,"tariff_bdt_per_kwh":10},{"hour":23,"demand_kwh":105,"solar_kwh":0,"tariff_bdt_per_kwh":7}],"battery":{"capacity_kwh":240,"initial_energy_kwh":120,"minimum_energy_kwh":30,"max_charge_kwh_per_hour":60,"max_discharge_kwh_per_hour":60}}
-    };
+/* ------------------------------------------------------------------ *
+ * Sample scenarios (identical payloads to data/public_samples.json)
+ * ------------------------------------------------------------------ */
+var BASE_HOURS = [
+  [0,90,0,6],[1,85,0,6],[2,80,0,5],[3,80,0,5],[4,85,0,5],[5,95,0,6],
+  [6,110,5,8],[7,130,20,10],[8,150,50,12],[9,165,90,14],[10,175,130,16],[11,180,160,16],
+  [12,185,180,15],[13,180,170,14],[14,170,140,13],[15,165,90,14],[16,170,45,18],[17,185,10,22],
+  [18,205,0,28],[19,215,0,30],[20,205,0,26],[21,175,0,18],[22,135,0,10],[23,105,0,7]
+].map(function (r) {
+  return { hour: r[0], demand_kwh: r[1], solar_kwh: r[2], tariff_bdt_per_kwh: r[3] };
+});
 
-    const $ = (id) => document.getElementById(id);
-    const API = (location.protocol === 'file:') ? 'http://localhost:8000/optimize-energy' : '/optimize-energy';
+function hoursCopy() { return BASE_HOURS.map(function (h) { return Object.assign({}, h); }); }
 
-    function pretty(o) { return JSON.stringify(o, null, 2); }
-    function hoursOnly(input) {
-      // Strip notes for the "hours JSON" pane to keep it focused.
-      return { scenario_id: input.scenario_id, hours: input.hours, battery: input.battery };
-    }
+var SAMPLES = {
+  "SAMPLE-01": {
+    scenario_id: "SAMPLE-01",
+    operator_notes: [
+      "Facilities will wash the rooftop solar panels from noon until 2 PM. During cleaning, usable solar should be treated as roughly 25% of the forecast.",
+      "The sports office moved next month's registration deadline."
+    ],
+    hours: hoursCopy(),
+    battery: { capacity_kwh: 220, initial_energy_kwh: 110, minimum_energy_kwh: 40, max_charge_kwh_per_hour: 50, max_discharge_kwh_per_hour: 50 }
+  },
+  "SAMPLE-03": {
+    scenario_id: "SAMPLE-03",
+    operator_notes: ["Keep at least 50% of the battery capacity stored in the battery from 6 PM until 9 PM for emergency operations."],
+    hours: hoursCopy(),
+    battery: { capacity_kwh: 200, initial_energy_kwh: 120, minimum_energy_kwh: 40, max_charge_kwh_per_hour: 50, max_discharge_kwh_per_hour: 50 }
+  },
+  "SAMPLE-05": {
+    scenario_id: "SAMPLE-05",
+    operator_notes: ["From 6 PM until 9 PM, campus grid import must not exceed 155 kWh in any hour because the feeder is operating under a temporary limit."],
+    hours: hoursCopy(),
+    battery: { capacity_kwh: 240, initial_energy_kwh: 120, minimum_energy_kwh: 30, max_charge_kwh_per_hour: 60, max_discharge_kwh_per_hour: 60 }
+  }
+};
 
-    function loadSample(id) {
-      const s = SAMPLES[id];
-      if (!s) return;
-      $('notes').value = s.operator_notes.join('\n');
-      $('hours-json').value = pretty(hoursOnly(s));
-    }
+/* ------------------------------------------------------------------ *
+ * Small helpers — every one of these tolerates junk input on purpose.
+ * ------------------------------------------------------------------ */
+function $(id) { return document.getElementById(id); }
 
-    function buildPayload() {
-      const notesRaw = $('notes').value;
-      const lines = notesRaw.split('\n').map(s => s.trim()).filter(Boolean);
-      const base = JSON.parse($('hours-json').value);
-      if (!Array.isArray(base.hours) || base.hours.length !== 24) {
-        throw new Error('hours must contain exactly 24 entries');
-      }
-      return {
-        scenario_id: base.scenario_id || 'web-scenario',
-        operator_notes: lines.length ? lines : ['Run the day normally.'],
-        hours: base.hours,
-        battery: base.battery,
-      };
-    }
+function num(v) {
+  if (typeof v === "number" && isFinite(v)) return v;
+  if (typeof v === "string" && v.trim() !== "") {
+    var p = parseFloat(v);
+    if (isFinite(p)) return p;
+  }
+  return null;
+}
+function n0(v) { var x = num(v); return x === null ? 0 : x; }
+function fmt(v, d) {
+  var x = num(v);
+  if (x === null) return "—";
+  return x.toFixed(d === undefined ? 1 : d);
+}
+function money(v) {
+  var x = num(v);
+  if (x === null) return "—";
+  return x.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+function hh(h) { var x = num(h); return "H" + String(x === null ? 0 : Math.round(x)).padStart(2, "0"); }
+function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+function el(tag, cls, text) {
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined && text !== null) e.textContent = String(text);
+  return e;
+}
+function store(key, val) {
+  try { if (val === undefined) return localStorage.getItem(key); localStorage.setItem(key, val); }
+  catch (e) { return null; }
+}
 
-    function setStatus(text, kind) {
-      const el = $('status');
-      el.textContent = text;
-      el.className = 'status' + (kind ? ' ' + kind : '');
-    }
+/* ------------------------------------------------------------------ *
+ * State
+ * ------------------------------------------------------------------ */
+var state = {
+  payload: null,     // last request we sent
+  result: null,      // last response we rendered
+  rows: [],          // normalised, chart/table ready
+  baseline: null,    // solar-only cost for comparison
+  hover: -1,
+  mode: "solver"     // "solver" | "preview"
+};
 
-    function render(result) {
-      $('empty').style.display = 'none';
-      $('totals').style.display = 'grid';
-      $('summary').style.display = 'block';
-      $('directives-wrap').style.display = 'block';
+/* ------------------------------------------------------------------ *
+ * Endpoint handling
+ * ------------------------------------------------------------------ */
+function defaultEndpoint() {
+  if (location.protocol === "file:" || location.protocol === "null:" || !location.host) {
+    return "http://127.0.0.1:8000/optimize-energy";
+  }
+  return location.origin + "/optimize-energy";
+}
+function endpoint() {
+  var v = ($("api").value || "").trim();
+  return v || defaultEndpoint();
+}
+function healthUrl() {
+  var e = endpoint();
+  return e.replace(/\/optimize-energy\/?$/, "") + "/health";
+}
 
-      $('t-cost').innerHTML = `${result.total_cost_bdt.toFixed(2)}<span class="unit">BDT</span>`;
-      $('t-grid').innerHTML = `${result.total_grid_kwh.toFixed(1)}<span class="unit">kWh</span>`;
-      const peakRow = result.hourly_plan.reduce((a, b) => (b.grid_kwh > a.grid_kwh ? b : a));
-      $('t-peak').innerHTML = `H${String(peakRow.hour).padStart(2,'0')}<span class="unit">${peakRow.grid_kwh.toFixed(1)} kWh</span>`;
-      const types = [...new Set(result.directive_interpretation.filter(d => d.applies).map(d => d.directive_type))];
-      $('t-dir').innerHTML = `${types.length || 0}<span class="unit">${types.join(', ') || 'none'}</span>`;
+function checkHealth() {
+  var dot = $("dot"), label = $("health");
+  dot.className = "dot";
+  label.textContent = "checking…";
+  var url;
+  try { url = healthUrl(); } catch (e) { label.textContent = "bad URL"; return; }
 
-      $('summary').textContent = result.plan_summary;
+  var done = false;
+  var timer = setTimeout(function () {
+    if (!done) { done = true; dot.className = "dot down"; label.textContent = "no answer"; }
+  }, 4000);
 
-      const db = $('directives-body');
-      db.innerHTML = '';
-      for (const d of result.directive_interpretation) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${d.note_index}</td>
-          <td><span class="tag ${d.applies ? 'applies' : 'skip'}">${d.applies ? 'applies' : 'skip'}</span></td>
-          <td>${d.directive_type}</td>
-          <td><code>${d.structured_adjustment ? JSON.stringify(d.structured_adjustment) : 'null'}</code></td>
-          <td>${d.explanation || ''}</td>
-        `;
-        db.appendChild(tr);
-      }
+  fetch(url, { method: "GET" }).then(function (r) {
+    if (done) return; done = true; clearTimeout(timer);
+    if (r.ok) { dot.className = "dot live"; label.textContent = "API up"; }
+    else { dot.className = "dot down"; label.textContent = "HTTP " + r.status; }
+  })["catch"](function () {
+    if (done) return; done = true; clearTimeout(timer);
+    dot.className = "dot down"; label.textContent = "unreachable";
+  });
+}
 
-      const pb = $('plan-body');
-      pb.innerHTML = '';
-      for (const row of result.hourly_plan) {
-        const tr = document.createElement('tr');
-        const actionClass = row.battery_action === 'charge' ? 'action-charge'
-          : row.battery_action === 'discharge' ? 'action-discharge' : 'action-idle';
-        const sign = row.battery_action === 'discharge' ? '-' : row.battery_action === 'charge' ? '+' : ' ';
-        const cost = row.grid_kwh * (row.tariff_bdt_per_kwh ?? 0);
-        tr.innerHTML = `
-          <td>H${String(row.hour).padStart(2,'0')}</td>
-          <td>${row.demand_kwh?.toFixed(1) ?? '–'}</td>
-          <td>${row.solar_used_kwh.toFixed(1)}</td>
-          <td class="${actionClass}">${sign}${Math.abs(row.battery_kwh).toFixed(1)} ${row.battery_action}</td>
-          <td>${row.grid_kwh.toFixed(1)}</td>
-          <td>${(row.tariff_bdt_per_kwh ?? 0).toFixed(2)}</td>
-          <td>${cost.toFixed(2)}</td>
-          <td>${row.battery_energy_after_kwh.toFixed(1)}</td>
-        `;
-        pb.appendChild(tr);
-      }
+/* ------------------------------------------------------------------ *
+ * Banner
+ * ------------------------------------------------------------------ */
+function showBanner(title, detail) {
+  var b = $("banner");
+  b.innerHTML = "";
+  b.appendChild(el("b", null, title));
+  if (detail) {
+    b.appendChild(document.createTextNode(" "));
+    var c = el("code", null, detail);
+    b.appendChild(c);
+  }
+  b.classList.add("show");
+}
+function hideBanner() { $("banner").classList.remove("show"); }
 
-      drawChart(result);
-    }
+/* ------------------------------------------------------------------ *
+ * Inputs
+ * ------------------------------------------------------------------ */
+function loadSample(id) {
+  var s = SAMPLES[id];
+  if (!s) return;
+  $("notes").value = s.operator_notes.join("\n");
+  $("hours-json").value = JSON.stringify(
+    { scenario_id: s.scenario_id, hours: s.hours, battery: s.battery }, null, 2
+  );
+  Array.prototype.forEach.call(document.querySelectorAll("[data-sample]"), function (b) {
+    b.setAttribute("aria-pressed", String(b.getAttribute("data-sample") === id));
+  });
+  updateNotesCount();
+  validateJson();
+}
 
-    let chart = null;
-    function drawChart(result) {
-      const ctx = $('chart').getContext('2d');
-      const labels = result.hourly_plan.map(r => `H${String(r.hour).padStart(2,'0')}`);
-      const demand = result.hourly_plan.map(r => r.demand_kwh ?? 0);
-      const solar = result.hourly_plan.map(r => r.solar_used_kwh);
-      const grid = result.hourly_plan.map(r => r.grid_kwh);
-      const battery = result.hourly_plan.map(r => r.battery_energy_after_kwh);
-      const tariff = result.hourly_plan.map(r => r.tariff_bdt_per_kwh ?? 0);
+function updateNotesCount() {
+  var lines = noteLines();
+  var elc = $("notes-count");
+  elc.textContent = lines.length + " of 3 lines";
+  elc.className = lines.length > 3 ? "bad" : (lines.length ? "ok" : "");
+}
+function noteLines() {
+  return ($("notes").value || "").split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
+}
 
-      if (chart) chart.destroy();
-      chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [
-            { type: 'bar',  label: 'Demand',   data: demand, backgroundColor: 'rgba(154,163,178,0.45)', borderColor: 'rgba(154,163,178,0.7)', borderWidth: 1, stack: 'energy', order: 4 },
-            { type: 'bar',  label: 'Solar',    data: solar,  backgroundColor: 'rgba(77,208,225,0.85)', borderWidth: 0, stack: 'energy', order: 3 },
-            { type: 'bar',  label: 'Grid',     data: grid,   backgroundColor: 'rgba(255,183,77,0.85)', borderWidth: 0, stack: 'energy', order: 2 },
-            { type: 'line', label: 'Battery',  data: battery, borderColor: '#66bb6a', backgroundColor: 'rgba(102,187,106,0.15)', yAxisID: 'y2', tension: 0.25, pointRadius: 2, order: 1 },
-            { type: 'line', label: 'Tariff',   data: tariff, borderColor: '#ef5350', backgroundColor: 'rgba(239,83,80,0.10)', borderDash: [4,4], yAxisID: 'y3', tension: 0.25, pointRadius: 0, order: 0 },
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: {
-            legend: { labels: { color: '#e7ecf3' } },
-            tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${Number(c.parsed.y).toFixed(2)}` } }
-          },
-          scales: {
-            x: { stacked: true, ticks: { color: '#9aa3b2' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y:  { stacked: true, title: { display: true, text: 'kWh', color: '#9aa3b2' }, ticks: { color: '#9aa3b2' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y2: { position: 'right', title: { display: true, text: 'Battery kWh', color: '#66bb6a' }, ticks: { color: '#66bb6a' }, grid: { drawOnChartArea: false } },
-            y3: { position: 'right', title: { display: true, text: 'BDT/kWh', color: '#ef5350' }, ticks: { color: '#ef5350' }, grid: { drawOnChartArea: false }, offset: true },
-          }
-        }
-      });
-    }
+function validateJson() {
+  var st = $("json-state");
+  var raw = ($("hours-json").value || "").trim();
+  if (!raw) { st.textContent = "waiting"; st.className = ""; return null; }
+  var parsed;
+  try { parsed = JSON.parse(raw); }
+  catch (e) { st.textContent = "not valid JSON"; st.className = "bad"; return null; }
+  if (!parsed || !Array.isArray(parsed.hours)) { st.textContent = "missing hours array"; st.className = "bad"; return null; }
+  if (parsed.hours.length !== 24) { st.textContent = parsed.hours.length + " hours, need 24"; st.className = "bad"; return null; }
+  if (!parsed.battery || typeof parsed.battery !== "object") { st.textContent = "missing battery"; st.className = "bad"; return null; }
+  st.textContent = "24 hours, battery ok"; st.className = "ok";
+  return parsed;
+}
 
-    async function optimize() {
-      const btn = $('optimize');
-      btn.disabled = true;
-      setStatus('optimizing…');
-      try {
-        const payload = buildPayload();
-        const t0 = performance.now();
-        const res = await fetch(API, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        const ms = (performance.now() - t0).toFixed(0);
-        const body = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          setStatus(`HTTP ${res.status}: ${body.error || 'request failed'}`, 'err');
-          return;
-        }
-        render(body);
-        setStatus(`200 OK in ${ms} ms`, 'ok');
-      } catch (err) {
-        setStatus(`error: ${err.message}`, 'err');
-      } finally {
-        btn.disabled = false;
-      }
-    }
+function buildPayload() {
+  var base = validateJson();
+  if (!base) throw new Error("Fix the scenario JSON on the left first.");
+  var notes = noteLines();
+  if (notes.length > 3) throw new Error("The API accepts at most 3 operator notes.");
+  return {
+    scenario_id: base.scenario_id || "web-scenario",
+    operator_notes: notes.length ? notes : ["Run the day normally."],
+    hours: base.hours,
+    battery: base.battery
+  };
+}
 
-    // ----- Wire up -----
-    document.querySelectorAll('button[data-sample]').forEach(b => b.addEventListener('click', () => loadSample(b.dataset.sample)));
-    $('optimize').addEventListener('click', optimize);
-    $('reset').addEventListener('click', () => {
-      $('notes').value = '';
-      $('hours-json').value = '';
-      setStatus('idle');
-      $('empty').style.display = 'block';
-      $('totals').style.display = 'none';
-      $('summary').style.display = 'none';
-      $('directives-wrap').style.display = 'none';
-      $('plan-body').innerHTML = '';
-      if (chart) { chart.destroy(); chart = null; }
+/* ------------------------------------------------------------------ *
+ * Normalising the response so rendering can never explode
+ * ------------------------------------------------------------------ */
+function hourIndexFrom(payload) {
+  var map = {};
+  if (payload && Array.isArray(payload.hours)) {
+    payload.hours.forEach(function (h) {
+      var k = num(h && h.hour);
+      if (k !== null) map[Math.round(k)] = h;
     });
+  }
+  return map;
+}
 
-    // Load SAMPLE-01 by default so the page is never empty.
-    loadSample('SAMPLE-01');
-  </script>
+function normaliseRows(result, payload) {
+  var src = hourIndexFrom(payload);
+  var plan = (result && Array.isArray(result.hourly_plan)) ? result.hourly_plan : [];
+  return plan.map(function (r, i) {
+    r = r || {};
+    var hour = num(r.hour);
+    if (hour === null) hour = i;
+    hour = Math.round(hour);
+    var ref = src[hour] || {};
+
+    var action = typeof r.battery_action === "string" ? r.battery_action.toLowerCase() : "idle";
+    var mag = Math.abs(n0(r.battery_kwh));
+    var charge = action === "charge" ? mag : 0;
+    var discharge = action === "discharge" ? mag : 0;
+    if (action !== "charge" && action !== "discharge") action = "idle";
+
+    var tariff = num(r.tariff_bdt_per_kwh);
+    if (tariff === null) tariff = num(ref.tariff_bdt_per_kwh);
+    if (tariff === null) tariff = 0;
+
+    var demand = num(r.demand_kwh);
+    if (demand === null) demand = num(ref.demand_kwh);
+    if (demand === null) demand = 0;
+
+    var grid = n0(r.grid_kwh);
+    var solarUsed = n0(r.solar_used_kwh);
+
+    return {
+      hour: hour,
+      demand: demand,
+      solarForecast: n0(ref.solar_kwh),
+      solarUsed: solarUsed,
+      charge: charge,
+      discharge: discharge,
+      action: action,
+      grid: grid,
+      tariff: tariff,
+      cost: grid * tariff,
+      soc: n0(r.battery_energy_after_kwh)
+    };
+  }).sort(function (a, b) { return a.hour - b.hour; });
+}
+
+/* Solar-only baseline: no battery at all, every hour buys its shortfall. */
+function baselineCost(payload) {
+  if (!payload || !Array.isArray(payload.hours)) return null;
+  var total = 0;
+  payload.hours.forEach(function (h) {
+    var d = n0(h.demand_kwh), s = n0(h.solar_kwh), t = n0(h.tariff_bdt_per_kwh);
+    total += Math.max(0, d - s) * t;
+  });
+  return total;
+}
+
+/* ------------------------------------------------------------------ *
+ * Stats
+ * ------------------------------------------------------------------ */
+function renderStats(result, rows) {
+  var cost = num(result && result.total_cost_bdt);
+  if (cost === null) cost = rows.reduce(function (a, r) { return a + r.cost; }, 0);
+
+  var gridTotal = num(result && result.total_grid_kwh);
+  if (gridTotal === null) gridTotal = rows.reduce(function (a, r) { return a + r.grid; }, 0);
+
+  var peakVal = num(result && result.peak_grid_kwh);
+  var peakRow = null;
+  rows.forEach(function (r) { if (!peakRow || r.grid > peakRow.grid) peakRow = r; });
+  if (peakVal === null) peakVal = peakRow ? peakRow.grid : 0;
+
+  $("s-cost").innerHTML = "";
+  $("s-cost").appendChild(document.createTextNode(money(cost)));
+  $("s-cost").appendChild(el("small", null, "BDT"));
+  $("s-cost-sub").textContent = state.mode === "preview" ? "battery idle preview" : "solver optimum";
+
+  $("s-grid").innerHTML = "";
+  $("s-grid").appendChild(document.createTextNode(fmt(gridTotal, 0)));
+  $("s-grid").appendChild(el("small", null, "kWh"));
+  var solarSum = rows.reduce(function (a, r) { return a + r.solarUsed; }, 0);
+  $("s-grid-sub").textContent = fmt(solarSum, 0) + " kWh came from solar";
+
+  $("s-peak").textContent = peakRow ? hh(peakRow.hour) : "—";
+  $("s-peak-sub").textContent = fmt(peakVal, 1) + " kWh imported";
+
+  var base = state.baseline;
+  var box = $("s-save");
+  var sub = $("s-save-sub");
+  var card = box.parentNode;
+  if (base === null || !isFinite(base) || base <= 0) {
+    box.textContent = "—"; sub.textContent = "vs solar-only day";
+    card.classList.remove("negative");
+  } else {
+    var diff = base - cost;
+    var pct = (diff / base) * 100;
+    box.innerHTML = "";
+    box.appendChild(document.createTextNode((diff >= 0 ? "" : "+") + money(Math.abs(diff))));
+    box.appendChild(el("small", null, "BDT"));
+    sub.textContent = fmt(Math.abs(pct), 1) + "% " + (diff >= 0 ? "cheaper than" : "above") + " a no-battery day";
+    card.classList.toggle("negative", diff < 0);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Tariff band + main chart (hand-drawn SVG, no chart library)
+ * ------------------------------------------------------------------ */
+var X0 = 44, X1 = 916, TOP = 16, PH = 250;
+var PW = X1 - X0;
+var CW = PW / 24;
+
+function niceCeil(v) {
+  if (!(v > 0)) return 0;
+  var mag = Math.pow(10, Math.floor(Math.log10(v)));
+  var step = mag / 2;
+  return Math.ceil(v / step) * step;
+}
+function svgEsc(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function tariffColor(t, lo, hi) {
+  var span = hi - lo;
+  var k = span > 0 ? clamp((t - lo) / span, 0, 1) : 0;
+  // teal (cheap) -> amber -> coral (expensive)
+  var r, g, b;
+  if (k < 0.5) {
+    var u = k / 0.5;
+    r = Math.round(63 + (242 - 63) * u);
+    g = Math.round(217 + (179 - 217) * u);
+    b = Math.round(192 + (71 - 192) * u);
+  } else {
+    var v = (k - 0.5) / 0.5;
+    r = Math.round(242 + (255 - 242) * v);
+    g = Math.round(179 + (101 - 179) * v);
+    b = Math.round(71 + (132 - 71) * v);
+  }
+  return "rgb(" + r + "," + g + "," + b + ")";
+}
+
+function renderTariffBand(rows) {
+  var svg = $("tariff-svg");
+  if (!rows.length) { svg.innerHTML = ""; return; }
+  var lo = Infinity, hi = -Infinity;
+  rows.forEach(function (r) { if (r.tariff < lo) lo = r.tariff; if (r.tariff > hi) hi = r.tariff; });
+  if (!isFinite(lo)) { lo = 0; hi = 0; }
+
+  var parts = [];
+  rows.forEach(function (r, i) {
+    var x = X0 + i * CW;
+    parts.push('<rect x="' + x.toFixed(2) + '" y="2" width="' + (CW - 1.5).toFixed(2) +
+      '" height="18" rx="2" fill="' + tariffColor(r.tariff, lo, hi) + '" opacity="0.85"></rect>');
+  });
+  svg.innerHTML = parts.join("");
+  $("tariff-range").textContent = fmt(lo, 0) + " – " + fmt(hi, 0) + " BDT/kWh";
+}
+
+function renderChart(rows, battery) {
+  var svg = $("chart");
+  if (!rows.length) { svg.innerHTML = ""; return; }
+
+  var maxUp = 0, maxDown = 0;
+  rows.forEach(function (r) {
+    var stack = r.solarUsed + r.discharge + r.grid;
+    if (stack > maxUp) maxUp = stack;
+    if (r.demand > maxUp) maxUp = r.demand;
+    if (r.charge > maxDown) maxDown = r.charge;
+  });
+  var top = niceCeil(maxUp) || 1;
+  var bot = niceCeil(maxDown);
+  var span = top + bot || 1;
+  var scale = PH / span;
+  function y(v) { return TOP + (top - v) * scale; }
+  var zero = y(0);
+
+  var cap = num(battery && battery.capacity_kwh);
+  if (cap === null || cap <= 0) {
+    cap = rows.reduce(function (a, r) { return Math.max(a, r.soc); }, 0) * 1.15 || 1;
+  }
+  var minRes = num(battery && battery.minimum_energy_kwh);
+  function ySoc(e) { return TOP + (1 - clamp(e / cap, 0, 1)) * PH; }
+
+  var p = [];
+
+  // horizontal guides + left axis
+  var ticks = [0, top / 2, top];
+  if (bot > 0) ticks.push(-bot);
+  ticks.forEach(function (t) {
+    var yy = y(t);
+    p.push('<line x1="' + X0 + '" y1="' + yy.toFixed(2) + '" x2="' + X1 + '" y2="' + yy.toFixed(2) +
+      '" stroke="' + (t === 0 ? "#2C3B59" : "rgba(255,255,255,0.05)") + '" stroke-width="1"></line>');
+    p.push('<text x="' + (X0 - 8) + '" y="' + (yy + 3.5).toFixed(2) + '" font-size="10" text-anchor="end">' +
+      Math.round(Math.abs(t)) + '</text>');
+  });
+  p.push('<text x="' + (X0 - 8) + '" y="' + (TOP - 5) + '" font-size="9.5" text-anchor="end" fill="#5C6880">kWh</text>');
+
+  // right axis (stored energy)
+  p.push('<text x="' + (X1 + 8) + '" y="' + (TOP + 4) + '" font-size="10">' + Math.round(cap) + '</text>');
+  p.push('<text x="' + (X1 + 8) + '" y="' + (TOP + PH + 4) + '" font-size="10">0</text>');
+  p.push('<text x="' + (X1 + 8) + '" y="' + (TOP - 5) + '" font-size="9.5" fill="#9C8CFF">stored</text>');
+
+  // reserve floor
+  if (minRes !== null && minRes > 0 && minRes < cap) {
+    var yr = ySoc(minRes);
+    p.push('<line x1="' + X0 + '" y1="' + yr.toFixed(2) + '" x2="' + X1 + '" y2="' + yr.toFixed(2) +
+      '" stroke="#9C8CFF" stroke-width="1" stroke-dasharray="2 5" opacity="0.4"></line>');
+  }
+
+  // bars
+  var bw = Math.min(23, CW * 0.6);
+  rows.forEach(function (r, i) {
+    var cx = X0 + i * CW + CW / 2;
+    var x = cx - bw / 2;
+    var acc = 0;
+    var segs = [
+      { v: r.solarUsed, c: "var(--solar)" },
+      { v: r.discharge, c: "var(--battery)" },
+      { v: r.grid, c: "var(--grid)" }
+    ];
+    segs.forEach(function (s) {
+      if (s.v <= 0) return;
+      var yTop = y(acc + s.v), yBot = y(acc);
+      var h = Math.max(0.6, yBot - yTop);
+      p.push('<rect x="' + x.toFixed(2) + '" y="' + yTop.toFixed(2) + '" width="' + bw.toFixed(2) +
+        '" height="' + h.toFixed(2) + '" fill="' + s.c + '" opacity="0.92"></rect>');
+      acc += s.v;
+    });
+    if (r.charge > 0) {
+      var hc = Math.max(0.6, y(-r.charge) - zero);
+      p.push('<rect x="' + x.toFixed(2) + '" y="' + zero.toFixed(2) + '" width="' + bw.toFixed(2) +
+        '" height="' + hc.toFixed(2) + '" fill="var(--charge)" opacity="0.9"></rect>');
+    }
+  });
+
+  // demand as a stepped outline
+  var dem = [];
+  rows.forEach(function (r, i) {
+    var xa = X0 + i * CW, xb = xa + CW, yy = y(r.demand).toFixed(2);
+    dem.push((i === 0 ? "M" : "L") + xa.toFixed(2) + " " + yy);
+    dem.push("L" + xb.toFixed(2) + " " + yy);
+  });
+  p.push('<path d="' + dem.join(" ") + '" fill="none" stroke="#E8EDF6" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.5"></path>');
+
+  // stored energy line
+  var soc = rows.map(function (r, i) {
+    return (X0 + i * CW + CW / 2).toFixed(2) + "," + ySoc(r.soc).toFixed(2);
+  }).join(" ");
+  p.push('<polyline points="' + soc + '" fill="none" stroke="#9C8CFF" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"></polyline>');
+  rows.forEach(function (r, i) {
+    p.push('<circle cx="' + (X0 + i * CW + CW / 2).toFixed(2) + '" cy="' + ySoc(r.soc).toFixed(2) +
+      '" r="1.9" fill="#9C8CFF"></circle>');
+  });
+
+  // hover guide + hit areas
+  p.push('<line id="guide" x1="0" y1="' + TOP + '" x2="0" y2="' + (TOP + PH) +
+    '" stroke="#E8EDF6" stroke-width="1" opacity="0"></line>');
+  rows.forEach(function (r, i) {
+    p.push('<rect class="hit" data-i="' + i + '" x="' + (X0 + i * CW).toFixed(2) + '" y="' + TOP +
+      '" width="' + CW.toFixed(2) + '" height="' + PH + '"></rect>');
+  });
+
+  // hour axis
+  rows.forEach(function (r, i) {
+    if (i % 2 !== 0) return;
+    p.push('<text x="' + (X0 + i * CW + CW / 2).toFixed(2) + '" y="' + (TOP + PH + 18) +
+      '" font-size="9.5" text-anchor="middle">' + svgEsc(String(r.hour).padStart(2, "0")) + '</text>');
+  });
+  p.push('<text x="' + X0 + '" y="' + (TOP + PH + 36) + '" font-size="9.5" fill="#5C6880">hour of day</text>');
+
+  svg.innerHTML = p.join("");
+
+  Array.prototype.forEach.call(svg.querySelectorAll(".hit"), function (h) {
+    h.addEventListener("mouseenter", function () { setHover(parseInt(h.getAttribute("data-i"), 10)); });
+  });
+  svg.addEventListener("mouseleave", function () { setHover(-1); });
+}
+
+/* ------------------------------------------------------------------ *
+ * Readout under the chart
+ * ------------------------------------------------------------------ */
+function readoutFields(r) {
+  if (!r) {
+    return [
+      ["hour", "hover the strip"],
+      ["demand", "—"], ["solar used", "—"], ["battery", "—"],
+      ["grid", "—"], ["tariff", "—"], ["hour cost", "—"], ["stored after", "—"]
+    ];
+  }
+  var batt = r.action === "idle" ? "idle"
+    : (r.action === "charge" ? "+" : "−") + fmt(Math.abs(r.charge || r.discharge), 1) + " kWh";
+  return [
+    ["hour", hh(r.hour)],
+    ["demand", fmt(r.demand, 1) + " kWh"],
+    ["solar used", fmt(r.solarUsed, 1) + " / " + fmt(r.solarForecast, 0)],
+    ["battery", batt],
+    ["grid", fmt(r.grid, 1) + " kWh"],
+    ["tariff", fmt(r.tariff, 2) + " BDT"],
+    ["hour cost", fmt(r.cost, 0) + " BDT"],
+    ["stored after", fmt(r.soc, 1) + " kWh"]
+  ];
+}
+
+function renderReadout(r) {
+  var box = $("readout");
+  box.innerHTML = "";
+  readoutFields(r).forEach(function (pair) {
+    var d = el("div");
+    d.appendChild(el("div", "rk", pair[0]));
+    d.appendChild(el("div", "rv", pair[1]));
+    box.appendChild(d);
+  });
+}
+
+function setHover(i) {
+  state.hover = i;
+  var r = (i >= 0 && i < state.rows.length) ? state.rows[i] : null;
+  renderReadout(r);
+
+  var guide = document.getElementById("guide");
+  if (guide) {
+    if (r) {
+      var x = (X0 + i * CW + CW / 2).toFixed(2);
+      guide.setAttribute("x1", x);
+      guide.setAttribute("x2", x);
+      guide.setAttribute("opacity", "0.25");
+    } else {
+      guide.setAttribute("opacity", "0");
+    }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("#plan-body tr"), function (tr, idx) {
+    tr.classList.toggle("on", idx === i);
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ * Directives
+ * ------------------------------------------------------------------ */
+function prettyAdjustment(type, adj) {
+  if (adj === null || adj === undefined) return null;
+  if (typeof adj !== "object") return String(adj);
+  var hours = Array.isArray(adj.hours) ? adj.hours : null;
+  var win = hours && hours.length
+    ? hh(hours[0]) + "–" + hh(hours[hours.length - 1]) + " (" + hours.length + "h)"
+    : null;
+  var head = null;
+  if (type === "solar_reduction" && num(adj.factor) !== null) {
+    head = "usable solar × " + fmt(adj.factor, 2);
+  } else if (type === "minimum_battery_reserve" && num(adj.minimum_energy_kwh) !== null) {
+    head = "keep ≥ " + fmt(adj.minimum_energy_kwh, 1) + " kWh stored";
+  } else if (type === "max_grid_window" && num(adj.max_grid_kwh) !== null) {
+    head = "grid import ≤ " + fmt(adj.max_grid_kwh, 1) + " kWh/h";
+  } else if (type === "no_charge_window") {
+    head = "no charging";
+  } else if (type === "no_discharge_window") {
+    head = "no discharging";
+  }
+  if (head && win) return head + "  ·  " + win;
+  if (head) return head;
+  try { return JSON.stringify(adj); } catch (e) { return String(adj); }
+}
+
+function renderDirectives(result, payload) {
+  var wrap = $("dirs");
+  var empty = $("dirs-empty");
+  wrap.innerHTML = "";
+
+  var list = (result && Array.isArray(result.directive_interpretation)) ? result.directive_interpretation : [];
+  var notes = (payload && Array.isArray(payload.operator_notes)) ? payload.operator_notes : [];
+
+  var summary = result && typeof result.plan_summary === "string" ? result.plan_summary.trim() : "";
+  var sbox = $("sum-box");
+  if (summary) { sbox.textContent = summary; sbox.classList.remove("hidden"); }
+  else { sbox.classList.add("hidden"); }
+
+  if (!list.length) {
+    empty.classList.remove("hidden");
+    empty.textContent = "The response carried no directive_interpretation entries.";
+    $("dir-count").textContent = "";
+    return;
+  }
+  empty.classList.add("hidden");
+
+  var active = list.filter(function (d) { return d && d.applies; }).length;
+  $("dir-count").textContent = active + " of " + list.length + " applied";
+
+  list.forEach(function (d) {
+    d = d || {};
+    var on = !!d.applies;
+    var card = el("div", "dir " + (on ? "on" : "off"));
+
+    var top = el("div", "dtop");
+    top.appendChild(el("span", "dtype", d.directive_type || "unknown"));
+    top.appendChild(el("span", "dstate", on ? "applied" : "ignored"));
+    var idx = num(d.note_index);
+    top.appendChild(el("span", "didx", idx === null ? "" : "note " + idx));
+    card.appendChild(top);
+
+    var text = null;
+    if (idx !== null) {
+      if (notes[idx] !== undefined) text = notes[idx];
+      else if (notes[idx - 1] !== undefined) text = notes[idx - 1];
+    }
+    if (text) card.appendChild(el("p", "dquote", "“" + text + "”"));
+
+    var pretty = prettyAdjustment(d.directive_type, d.structured_adjustment);
+    if (pretty) card.appendChild(el("div", "dadj", pretty));
+
+    if (d.explanation) card.appendChild(el("p", "dexp", d.explanation));
+
+    wrap.appendChild(card);
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ * Table
+ * ------------------------------------------------------------------ */
+function renderTable(rows) {
+  var body = $("plan-body");
+  body.innerHTML = "";
+  if (!rows.length) {
+    var tr0 = el("tr");
+    var td0 = el("td", null, "no plan yet");
+    td0.setAttribute("colspan", "8");
+    td0.setAttribute("style", "text-align:center;color:var(--text-faint);padding:22px");
+    tr0.appendChild(td0);
+    body.appendChild(tr0);
+    return;
+  }
+  var maxGrid = rows.reduce(function (a, r) { return Math.max(a, r.grid); }, 0) || 1;
+
+  rows.forEach(function (r, i) {
+    var tr = el("tr");
+    if (r.grid >= maxGrid - 1e-9) tr.classList.add("peak");
+
+    tr.appendChild(el("td", null, hh(r.hour)));
+    tr.appendChild(el("td", null, fmt(r.demand, 1)));
+    tr.appendChild(el("td", null, fmt(r.solarUsed, 1)));
+
+    var b = el("td", "act-" + r.action);
+    b.textContent = r.action === "idle" ? "idle"
+      : (r.action === "charge" ? "+" : "−") + fmt(Math.abs(r.charge || r.discharge), 1);
+    tr.appendChild(b);
+
+    var g = el("td");
+    g.appendChild(document.createTextNode(fmt(r.grid, 1)));
+    var bar = el("span", "bar");
+    bar.setAttribute("style", "width:" + (Math.max(0, r.grid) / maxGrid * 34).toFixed(1) + "px");
+    g.appendChild(bar);
+    tr.appendChild(g);
+
+    tr.appendChild(el("td", null, fmt(r.tariff, 2)));
+    tr.appendChild(el("td", null, fmt(r.cost, 0)));
+    tr.appendChild(el("td", null, fmt(r.soc, 1)));
+
+    tr.addEventListener("mouseenter", function () { setHover(i); });
+    body.appendChild(tr);
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ * Full render
+ * ------------------------------------------------------------------ */
+function render(result, payload) {
+  state.result = result;
+  state.payload = payload;
+  state.rows = normaliseRows(result, payload);
+  state.baseline = baselineCost(payload);
+
+  if (!state.rows.length) {
+    showBanner("The API answered, but hourly_plan was empty or missing.", "check /optimize-energy");
+  }
+
+  $("viz-empty").classList.add("hidden");
+  $("viz-wrap").classList.remove("hidden");
+
+  renderStats(result, state.rows);
+  renderTariffBand(state.rows);
+  renderChart(state.rows, payload && payload.battery);
+  renderTable(state.rows);
+  renderDirectives(result, payload);
+  setHover(-1);
+}
+
+/* ------------------------------------------------------------------ *
+ * Offline preview: solar first, battery untouched. Deterministic, and
+ * clearly not the solver — useful when the API isn't running yet.
+ * ------------------------------------------------------------------ */
+function previewResult(payload) {
+  var soc = n0(payload.battery && payload.battery.initial_energy_kwh);
+  var plan = payload.hours.map(function (h) {
+    var d = n0(h.demand_kwh), s = n0(h.solar_kwh), t = n0(h.tariff_bdt_per_kwh);
+    var used = Math.min(d, s);
+    return {
+      hour: n0(h.hour),
+      demand_kwh: d,
+      solar_used_kwh: used,
+      battery_action: "idle",
+      battery_kwh: 0,
+      grid_kwh: Math.max(0, d - used),
+      tariff_bdt_per_kwh: t,
+      battery_energy_after_kwh: soc
+    };
+  });
+  var cost = plan.reduce(function (a, r) { return a + r.grid_kwh * r.tariff_bdt_per_kwh; }, 0);
+  return {
+    scenario_id: payload.scenario_id,
+    directive_interpretation: payload.operator_notes.map(function (_, i) {
+      return { note_index: i, applies: false, directive_type: "no_op", structured_adjustment: null,
+        explanation: "Preview mode does not interpret notes — start the API and press Optimize." };
+    }),
+    hourly_plan: plan,
+    total_grid_kwh: plan.reduce(function (a, r) { return a + r.grid_kwh; }, 0),
+    total_cost_bdt: cost,
+    peak_grid_kwh: plan.reduce(function (a, r) { return Math.max(a, r.grid_kwh); }, 0),
+    plan_summary: "Preview only: solar covers what it can, the grid covers the rest, and the battery never moves. Run Optimize against the API for the real schedule."
+  };
+}
+
+/* ------------------------------------------------------------------ *
+ * Actions
+ * ------------------------------------------------------------------ */
+function optimize() {
+  var btn = $("optimize");
+  hideBanner();
+  var payload;
+  try { payload = buildPayload(); }
+  catch (e) { showBanner(e.message); return; }
+
+  state.mode = "solver";
+  var old = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Optimizing…";
+  var settled = false;
+  function settle() {
+    if (settled) return;
+    settled = true;
+    btn.disabled = false;
+    btn.textContent = old;
+  }
+
+  var t0 = (window.performance && performance.now) ? performance.now() : Date.now();
+
+  fetch(endpoint(), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload)
+  }).then(function (res) {
+    return res.text().then(function (txt) {
+      var body = null;
+      try { body = txt ? JSON.parse(txt) : null; } catch (e) { body = null; }
+      return { ok: res.ok, status: res.status, body: body, raw: txt };
+    });
+  }).then(function (out) {
+    settle();
+    var t1 = (window.performance && performance.now) ? performance.now() : Date.now();
+    if (!out.ok) {
+      var detail = "";
+      if (out.body && typeof out.body === "object") {
+        detail = out.body.error || out.body.detail || out.body.message || "";
+        if (detail && typeof detail !== "string") { try { detail = JSON.stringify(detail); } catch (e) { detail = ""; } }
+      }
+      if (!detail) detail = (out.raw || "").slice(0, 200);
+      showBanner("The API returned HTTP " + out.status + ".", detail);
+      return;
+    }
+    if (!out.body || typeof out.body !== "object") {
+      showBanner("The API answered, but the body was not JSON.", (out.raw || "").slice(0, 200));
+      return;
+    }
+    render(out.body, payload);
+    $("dot").className = "dot live";
+    $("health").textContent = Math.round(t1 - t0) + " ms";
+  })["catch"](function (err) {
+    settle();
+    showBanner("Could not reach the API.", (err && err.message ? err.message : "network error") + " — " + endpoint());
+    $("dot").className = "dot down";
+    $("health").textContent = "unreachable";
+  });
+
+  // Safety net: never leave the button stuck if the promise never settles.
+  setTimeout(settle, 20000);
+}
+
+function preview() {
+  hideBanner();
+  var payload;
+  try { payload = buildPayload(); }
+  catch (e) { showBanner(e.message); return; }
+  state.mode = "preview";
+  render(previewResult(payload), payload);
+}
+
+function downloadCsv() {
+  if (!state.rows.length) { showBanner("Run a plan before downloading the CSV."); return; }
+  var head = ["hour", "demand_kwh", "solar_used_kwh", "battery_action", "battery_kwh", "grid_kwh", "tariff_bdt_per_kwh", "cost_bdt", "battery_energy_after_kwh"];
+  var lines = [head.join(",")];
+  state.rows.forEach(function (r) {
+    lines.push([
+      r.hour, r.demand.toFixed(2), r.solarUsed.toFixed(2), r.action,
+      (r.charge || r.discharge).toFixed(2), r.grid.toFixed(2),
+      r.tariff.toFixed(2), r.cost.toFixed(2), r.soc.toFixed(2)
+    ].join(","));
+  });
+  try {
+    var blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = (state.payload && state.payload.scenario_id ? state.payload.scenario_id : "gridwise") + "-plan.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  } catch (e) {
+    showBanner("This browser blocked the download.", e && e.message ? e.message : "");
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Wiring
+ * ------------------------------------------------------------------ */
+Array.prototype.forEach.call(document.querySelectorAll("[data-sample]"), function (b) {
+  b.addEventListener("click", function () { loadSample(b.getAttribute("data-sample")); });
+});
+Array.prototype.forEach.call(document.querySelectorAll("[data-snip]"), function (b) {
+  b.addEventListener("click", function () {
+    var ta = $("notes");
+    var lines = noteLines();
+    if (lines.length >= 3) { showBanner("Three notes is the maximum the API accepts."); return; }
+    lines.push(b.getAttribute("data-snip"));
+    ta.value = lines.join("\n");
+    updateNotesCount();
+  });
+});
+
+$("notes").addEventListener("input", updateNotesCount);
+$("clear-notes").addEventListener("click", function () { $("notes").value = ""; updateNotesCount(); });
+$("hours-json").addEventListener("input", validateJson);
+$("reformat").addEventListener("click", function () {
+  var raw = ($("hours-json").value || "").trim();
+  if (!raw) return;
+  try { $("hours-json").value = JSON.stringify(JSON.parse(raw), null, 2); }
+  catch (e) { showBanner("Can't reformat — the JSON isn't valid yet."); }
+  validateJson();
+});
+$("optimize").addEventListener("click", optimize);
+$("preview").addEventListener("click", preview);
+$("csv").addEventListener("click", downloadCsv);
+
+$("api").value = store("gridwise.api") || defaultEndpoint();
+$("api").addEventListener("change", function () {
+  store("gridwise.api", $("api").value.trim());
+  checkHealth();
+});
+
+document.addEventListener("keydown", function (e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); optimize(); }
+});
+
+loadSample("SAMPLE-01");
+renderReadout(null);
+checkHealth();
+
+// exposed for the smoke test harness only
+window.__gridwise = { render: render, previewResult: previewResult, state: state, buildPayload: buildPayload };
+
+})();
+</script>
 </body>
 </html>
