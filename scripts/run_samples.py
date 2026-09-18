@@ -26,10 +26,14 @@ from typing import Any
 
 import httpx
 
+# Allow `python scripts/run_samples.py` from the repository root on every OS.
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 # Replay validator lives in app.optimizer.replay (stub or full impl).
 from app.optimizer.replay import replay_check
 
-ROOT = Path(__file__).resolve().parent.parent
 SAMPLES_PATH = ROOT / "data" / "public_samples.json"
 TOLERANCE = 0.01
 
