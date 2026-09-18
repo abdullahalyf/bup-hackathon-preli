@@ -12,8 +12,11 @@ WORKDIR /service
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy just the application package — .dockerignore excludes tests/data/docs.
+# Copy the application package and the static frontend.
+# .dockerignore still excludes tests/data/docs/scripts/tasks.
 COPY app ./app
+COPY frontend ./frontend
+COPY frontend ./frontend
 
 # Run as a non-root user.
 RUN groupadd --system --gid 1000 gridwise \
