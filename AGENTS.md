@@ -5,7 +5,7 @@ Work plan, work units and prompts: docs/MASTER_PLAN.md
 
 | Member | Branch | Role | Owns |
 | --- | --- | --- | --- |
-| Alif | `alif` | Head / API integrator / deployment / only person who merges to main | `app/main.py`, `app/schemas.py`, `app/__init__.py`, `app/interpreter/__init__.py`, `app/optimizer/__init__.py`, `requirements.txt`, `.env.example`, `.gitignore`, `Dockerfile`, `.dockerignore`, `tests/test_api_layer.py`, deployment, `docs/*`, `tasks/*`, `AGENTS.md`, `CLAUDE.md` |
+| Alif | `alif` | Head / API integrator / deployment / only person who merges to main | `app/main.py`, `app/schemas.py`, `app/__init__.py`, `app/interpreter/__init__.py`, `app/optimizer/__init__.py`, `requirements.txt`, `.env.example`, `.gitignore`, `Dockerfile`, `.dockerignore`, `tests/test_api_layer.py`, deployment, `docs/*`, `tasks/*`, `AGENTS.md`, `CLAUDE.md`, `tools/*` |
 | Taseen | `taseen` | Optimizer engineer | `app/optimizer/solver.py`, `app/optimizer/replay.py`, `tests/test_optimizer.py` |
 | Tamjid | `tamjid` | LLM engineer | `app/interpreter/core.py`, `prompt.py`, `llm_client.py`, `normalize.py`, `fallback.py`, `tests/test_interpreter.py` |
 | Jubayer | `jubayer` | DevOps + QA + Docs + frontend | `scripts/*`, `tests/test_api.py`, `data/paraphrases.json`, `frontend/*`, `README.md`, `docs/VIDEO_SCRIPT.md` |
