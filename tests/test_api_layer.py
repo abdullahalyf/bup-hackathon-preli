@@ -10,11 +10,20 @@ from __future__ import annotations
 
 import json
 import math
+import time
 
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app
+from app.main import _reset_cache_for_tests, app
+
+
+@pytest.fixture(autouse=True)
+def _clear_response_cache():
+    """Each test starts with an empty LRU cache so results don't leak."""
+    _reset_cache_for_tests()
+    yield
+    _reset_cache_for_tests()
 
 
 # ------------------------------------------------------------- helpers / fixtures
@@ -310,3 +319,182 @@ def test_optimizer_raises_returns_500_without_traceback(monkeypatch):
     text = json.dumps(body).lower()
     assert "traceback" not in text
     assert "solver exploded" not in text
+
+
+# ----------------------------------------------- interpretation guard
+
+def test_bad_interpreter_outputs_become_no_ops(monkeypatch):
+    """Interpreter returns malformed payloads — they must become no_op
+    entries; the public response is still 200 and well-shaped."""
+
+    def bad_interp(_notes, _battery):
+        return [
+            # Wrong count: only 1 entry for 2 notes
+            {
+                "note_index": 0,
+                "applies": True,
+                "directive_type": "solar_reduction",
+                "structured_adjustment": {"hours": [25], "factor": 1.5},  # bad hours & factor
+                "explanation": "",
+            },
+            # Garbage entry
+            "not a dict",
+            # Duplicate note_index, unsorted hours, ok factor
+            {
+                "note_index": 0,
+                "applies": True,
+                "directive_type": "solar_reduction",
+                "structured_adjustment": {"hours": [14, 13], "factor": 0.5},
+                "explanation": "x",
+            },
+            # Unknown directive type
+            {
+                "note_index": 1,
+                "applies": True,
+                "directive_type": "no_such_thing",
+                "structured_adjustment": {"hours": [10]},
+                "explanation": "x",
+            },
+        ]
+
+    monkeypatch.setattr("app.main.interpret_notes", bad_interp)
+    monkeypatch.setattr("app.main.optimize", _dummy_success_optimize)
+    body = _valid_request(operator_notes=["note one", "note two"])
+    c = _client()
+    r = c.post("/optimize-energy", json=body)
+    assert r.status_code == 200
+    resp = r.json()
+    assert list(resp.keys())[:1] == ["scenario_id"]
+    # All three notes mapped to no_op (the only entry for index 0 is a bad one;
+    # index 1 has bad type; index 2 is filled by the duplicate guard with no_op).
+    interp = resp["directive_interpretation"]
+    assert len(interp) == 2
+    assert [e["note_index"] for e in interp] == [0, 1]
+    for entry in interp:
+        assert entry["applies"] is False
+        assert entry["directive_type"] == "no_op"
+        assert entry["structured_adjustment"] is None
+        assert isinstance(entry["explanation"], str) and entry["explanation"]
+    # Plan still 24 hours.
+    assert [p["hour"] for p in resp["hourly_plan"]] == list(range(24))
+
+
+# ----------------------------------------------- plan guard
+
+def test_plan_guard_recomputes_totals(monkeypatch):
+    """Optimizer lies about totals; the response totals match the recomputed plan."""
+
+    def lying_optimize(hours, battery, directives):
+        plan = [
+            {
+                "hour": h["hour"],
+                "grid_kwh": 2.0,
+                "solar_used_kwh": 1.0,
+                "battery_action": "idle",
+                "battery_kwh": 0.0,
+                "battery_energy_after_kwh": battery["initial_energy_kwh"],
+            }
+            for h in hours
+        ]
+        return {
+            "hourly_plan": plan,
+            "total_grid_kwh": 999.0,   # wrong
+            "total_cost_bdt": 9999.0,  # wrong
+            "peak_grid_kwh": 1.0,      # wrong
+            "status": "optimal",
+        }
+
+    monkeypatch.setattr("app.main.interpret_notes", _dummy_success)
+    monkeypatch.setattr("app.main.optimize", lying_optimize)
+    c = _client()
+    r = c.post("/optimize-energy", json=_valid_request())
+    assert r.status_code == 200
+    body = r.json()
+    # 24 hours × 2 grid_kwh × 8 BDT = 384 cost, 48 grid total, 2 peak.
+    assert body["total_grid_kwh"] == 48.0
+    assert body["total_cost_bdt"] == 384.0
+    assert body["peak_grid_kwh"] == 2.0
+
+
+def test_optimizer_nan_returns_generic_500(monkeypatch):
+    """Optimizer returns NaN — generic 500, no traceback, no internals leaked."""
+
+    def nan_optimize(hours, battery, directives):
+        plan = [
+            {
+                "hour": h["hour"],
+                "grid_kwh": float("nan") if h["hour"] == 5 else 2.0,
+                "solar_used_kwh": 0.0,
+                "battery_action": "idle",
+                "battery_kwh": 0.0,
+                "battery_energy_after_kwh": battery["initial_energy_kwh"],
+            }
+            for h in hours
+        ]
+        return {
+            "hourly_plan": plan,
+            "total_grid_kwh": float("nan"),
+            "total_cost_bdt": 0.0,
+            "peak_grid_kwh": 0.0,
+            "status": "optimal",
+        }
+
+    monkeypatch.setattr("app.main.interpret_notes", _dummy_success)
+    monkeypatch.setattr("app.main.optimize", nan_optimize)
+    c = _client()
+    r = c.post("/optimize-energy", json=_valid_request())
+    assert r.status_code == 500
+    body = r.json()
+    assert body == {"error": "internal error"}
+    text = json.dumps(body).lower()
+    assert "traceback" not in text
+    assert "nan" not in text
+
+
+# ----------------------------------------------- LRU cache
+
+def test_cache_hit_on_repeat_request(monkeypatch):
+    """Second identical request must be served from the cache: faster and equal."""
+    monkeypatch.setattr("app.main.interpret_notes", _dummy_success)
+    monkeypatch.setattr("app.main.optimize", _dummy_success_optimize)
+    c = _client()
+    body = _valid_request()
+
+    t0 = time.perf_counter()
+    r1 = c.post("/optimize-energy", json=body)
+    first_ms = (time.perf_counter() - t0) * 1000.0
+    assert r1.status_code == 200
+    body1 = r1.json()
+
+    t0 = time.perf_counter()
+    r2 = c.post("/optimize-energy", json=body)
+    second_ms = (time.perf_counter() - t0) * 1000.0
+    assert r2.status_code == 200
+    body2 = r2.json()
+
+    assert body1 == body2
+    # Cache hit must be no slower than the first request (in practice, much faster).
+    assert second_ms <= first_ms + 1.0
+
+
+# ----------------------------------------------- interpreter timeout fallback
+
+def test_slow_interpreter_returns_200_with_no_ops_under_15s(monkeypatch):
+    """A 14-second interpreter is killed by the 12 s timeout and falls back to
+    no_op entries; total request < 15 s."""
+
+    def slow_interp(_notes, _battery):
+        time.sleep(14.0)
+        return []
+
+    monkeypatch.setattr("app.main.interpret_notes", slow_interp)
+    monkeypatch.setattr("app.main.optimize", _dummy_success_optimize)
+    c = _client()
+    started = time.perf_counter()
+    r = c.post("/optimize-energy", json=_valid_request())
+    elapsed = time.perf_counter() - started
+    assert r.status_code == 200, f"expected 200 got {r.status_code} after {elapsed:.2f}s"
+    assert elapsed < 15.0, f"took {elapsed:.2f}s, must be < 15s"
+    body = r.json()
+    assert all(e["applies"] is False for e in body["directive_interpretation"])
+    assert len(body["directive_interpretation"]) == 1
