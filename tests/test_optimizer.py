@@ -207,3 +207,27 @@ def test_build_limits_overlaps():
     assert limits["max_charge"][2] == 0.0
     assert limits["max_charge"][3] == 0.0
     assert limits["max_charge"][4] == 3.0
+
+
+def test_all_public_samples():
+    import json
+    from pathlib import Path
+
+    data_path = Path(__file__).parent.parent / "data" / "public_samples.json"
+    with open(data_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    assert len(data["cases"]) == 10
+    for case in data["cases"]:
+        inp = case["input"]
+        exp = case["expected_output"]
+        hours = inp["hours"]
+        battery = inp["battery"]
+        directives = [
+            d for d in exp["directive_interpretation"] if d.get("applies") is True
+        ]
+        res = optimize(hours, battery, directives)
+        assert res["status"] == "optimal"
+        assert abs(res["total_cost_bdt"] - exp["total_cost_bdt"]) <= 0.01
+        assert abs(res["total_grid_kwh"] - exp["total_grid_kwh"]) <= 0.01
+        assert abs(res["peak_grid_kwh"] - exp["peak_grid_kwh"]) <= 0.01
