@@ -1,1 +1,362 @@
-[]
+[
+  {
+    "note": "Cleaning the panels halves the midday solar from 12:00 until 14:00 today.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "solar_reduction",
+      "structured_adjustment": {"hours": [12, 13], "factor": 0.5}
+    }
+  },
+  {
+    "note": "Dust storm expected to knock solar output down to twenty percent between 13:00 and 16:00.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "solar_reduction",
+      "structured_adjustment": {"hours": [13, 14, 15], "factor": 0.2}
+    }
+  },
+  {
+    "note": "Construction shadows the western array; cut solar by 75% from one until three this afternoon.",
+    "capacity_kwh": 220,
+    "expected": {
+      "applies": true,
+      "directive_type": "solar_reduction",
+      "structured_adjustment": {"hours": [13, 14], "factor": 0.25}
+    }
+  },
+  {
+    "note": "Inverter maintenance drops usable PV to a quarter of forecast for the noon hour only.",
+    "capacity_kwh": 180,
+    "expected": {
+      "applies": true,
+      "directive_type": "solar_reduction",
+      "structured_adjustment": {"hours": [12], "factor": 0.25}
+    }
+  },
+  {
+    "note": "Soiling cuts yield by 60% from 10:00 to 13:00 on the rooftop array.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "solar_reduction",
+      "structured_adjustment": {"hours": [10, 11, 12], "factor": 0.4}
+    }
+  },
+  {
+    "note": "We expect an 80% drop in solar output between 14:00-17:00 due to heavy smog today.",
+    "capacity_kwh": 250,
+    "expected": {
+      "applies": true,
+      "directive_type": "solar_reduction",
+      "structured_adjustment": {"hours": [14, 15, 16], "factor": 0.2}
+    }
+  },
+  {
+    "note": "Reserve 50% of the battery from 18:00 until 21:00 for emergency response.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "minimum_battery_reserve",
+      "structured_adjustment": {"hours": [18, 19, 20], "minimum_energy_kwh": 100}
+    }
+  },
+  {
+    "note": "Hold at least a quarter of the battery capacity stored during hours 19 through 22.",
+    "capacity_kwh": 240,
+    "expected": {
+      "applies": true,
+      "directive_type": "minimum_battery_reserve",
+      "structured_adjustment": {"hours": [19, 20, 21], "minimum_energy_kwh": 60}
+    }
+  },
+  {
+    "note": "Keep three-quarters of the pack available from 17:00 until 20:00 to ride out grid events.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "minimum_battery_reserve",
+      "structured_adjustment": {"hours": [17, 18, 19], "minimum_energy_kwh": 150}
+    }
+  },
+  {
+    "note": "Ensure 80 kWh minimum state of charge between 22:00 and 23:00 for backup tonight.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "minimum_battery_reserve",
+      "structured_adjustment": {"hours": [22], "minimum_energy_kwh": 80}
+    }
+  },
+  {
+    "note": "Store at least 60 kWh in the battery from 6 PM to 8 PM for the evening shift.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "minimum_battery_reserve",
+      "structured_adjustment": {"hours": [18, 19], "minimum_energy_kwh": 60}
+    }
+  },
+  {
+    "note": "Reserve 100% of battery capacity from 03:00 until 06:00 for early-morning backup.",
+    "capacity_kwh": 180,
+    "expected": {
+      "applies": true,
+      "directive_type": "minimum_battery_reserve",
+      "structured_adjustment": {"hours": [3, 4, 5], "minimum_energy_kwh": 180}
+    }
+  },
+  {
+    "note": "Hold one-fifth of capacity in reserve across hours 0 through 5.",
+    "capacity_kwh": 250,
+    "expected": {
+      "applies": true,
+      "directive_type": "minimum_battery_reserve",
+      "structured_adjustment": {"hours": [0, 1, 2, 3, 4, 5], "minimum_energy_kwh": 50}
+    }
+  },
+  {
+    "note": "Charger isolation: do not charge the battery from 02:00 until 05:00 today.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "no_charge_window",
+      "structured_adjustment": {"hours": [2, 3, 4]}
+    }
+  },
+  {
+    "note": "BMS calibration means no charging allowed between 11:00 and 13:00.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "no_charge_window",
+      "structured_adjustment": {"hours": [11, 12]}
+    }
+  },
+  {
+    "note": "Block all battery charging for the midnight hour only.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "no_charge_window",
+      "structured_adjustment": {"hours": [0]}
+    }
+  },
+  {
+    "note": "Battery charger locked out for maintenance from 14:00 to 18:00.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "no_charge_window",
+      "structured_adjustment": {"hours": [14, 15, 16, 17]}
+    }
+  },
+  {
+    "note": "For firmware updates we cannot charge between 21:00 and 23:00.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "no_charge_window",
+      "structured_adjustment": {"hours": [21, 22]}
+    }
+  },
+  {
+    "note": "Thermal stress window: no charging from 12:00 to 15:00 today.",
+    "capacity_kwh": 220,
+    "expected": {
+      "applies": true,
+      "directive_type": "no_charge_window",
+      "structured_adjustment": {"hours": [12, 13, 14]}
+    }
+  },
+  {
+    "note": "Hold the battery idle from 22:00 to 06:00 so we can dispatch elsewhere.",
+    "capacity_kwh": 240,
+    "expected": {
+      "applies": true,
+      "directive_type": "no_charge_window",
+      "structured_adjustment": {"hours": [22, 23, 0, 1, 2, 3, 4, 5]}
+    }
+  },
+  {
+    "note": "Protection testing disables discharge from 18:00 to 20:00.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "no_discharge_window",
+      "structured_adjustment": {"hours": [18, 19]}
+    }
+  },
+  {
+    "note": "Battery must not discharge between 19:00 and 22:00 during relay inspection.",
+    "capacity_kwh": 220,
+    "expected": {
+      "applies": true,
+      "directive_type": "no_discharge_window",
+      "structured_adjustment": {"hours": [19, 20, 21]}
+    }
+  },
+  {
+    "note": "Lock the inverter from discharging for the 9 PM hour only.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "no_discharge_window",
+      "structured_adjustment": {"hours": [21]}
+    }
+  },
+  {
+    "note": "Output breaker is open: do not discharge any time between 06:00 and 09:00.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "no_discharge_window",
+      "structured_adjustment": {"hours": [6, 7, 8]}
+    }
+  },
+  {
+    "note": "Discharge disabled between 13:00-15:00 while we run insulation tests.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "no_discharge_window",
+      "structured_adjustment": {"hours": [13, 14]}
+    }
+  },
+  {
+    "note": "No discharge from midnight until 4 AM to coordinate with substation work.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "no_discharge_window",
+      "structured_adjustment": {"hours": [0, 1, 2, 3]}
+    }
+  },
+  {
+    "note": "Disable discharge from 22:00 through 23:00 to leave headroom for tomorrow's morning peak.",
+    "capacity_kwh": 240,
+    "expected": {
+      "applies": true,
+      "directive_type": "no_discharge_window",
+      "structured_adjustment": {"hours": [22]}
+    }
+  },
+  {
+    "note": "Feeder constraint: cap grid import at 150 kWh per hour from 18:00 to 21:00.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "max_grid_window",
+      "structured_adjustment": {"hours": [18, 19, 20], "max_grid_kwh": 150}
+    }
+  },
+  {
+    "note": "Substation limit: no more than 120 kWh drawn from the grid between 19:00 and 22:00.",
+    "capacity_kwh": 220,
+    "expected": {
+      "applies": true,
+      "directive_type": "max_grid_window",
+      "structured_adjustment": {"hours": [19, 20, 21], "max_grid_kwh": 120}
+    }
+  },
+  {
+    "note": "Transformer overload watch: limit grid intake to 200 kWh per hour from 17:00 until 20:00.",
+    "capacity_kwh": 250,
+    "expected": {
+      "applies": true,
+      "directive_type": "max_grid_window",
+      "structured_adjustment": {"hours": [17, 18, 19], "max_grid_kwh": 200}
+    }
+  },
+  {
+    "note": "Keep import under 175 kWh in every hour from 8 PM through midnight.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": true,
+      "directive_type": "max_grid_window",
+      "structured_adjustment": {"hours": [20, 21, 22, 23], "max_grid_kwh": 175}
+    }
+  },
+  {
+    "note": "Solar panel warranty check scheduled for next Tuesday morning.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": false,
+      "directive_type": "no_op",
+      "structured_adjustment": null
+    }
+  },
+  {
+    "note": "Reminder: battery cells arrive next week, please clear the loading dock.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": false,
+      "directive_type": "no_op",
+      "structured_adjustment": null
+    }
+  },
+  {
+    "note": "Pastry menu changes tomorrow, please update the cafe board.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": false,
+      "directive_type": "no_op",
+      "structured_adjustment": null
+    }
+  },
+  {
+    "note": "Sports registration deadline moved to next month.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": false,
+      "directive_type": "no_op",
+      "structured_adjustment": null
+    }
+  },
+  {
+    "note": "Quarterly solar maintenance planned for the weekend after this one.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": false,
+      "directive_type": "no_op",
+      "structured_adjustment": null
+    }
+  },
+  {
+    "note": "Wildfire smoke is forecast to reduce solar to a third of normal from 15:00 until 18:00.",
+    "capacity_kwh": 220,
+    "expected": {
+      "applies": true,
+      "directive_type": "solar_reduction",
+      "structured_adjustment": {"hours": [15, 16, 17], "factor": 0.34}
+    }
+  },
+  {
+    "note": "Cap intake from the substation at 90 kWh per hour between 12:00 and 14:00 during line maintenance.",
+    "capacity_kwh": 180,
+    "expected": {
+      "applies": true,
+      "directive_type": "max_grid_window",
+      "structured_adjustment": {"hours": [12, 13], "max_grid_kwh": 90}
+    }
+  },
+  {
+    "note": "Reminder: tomorrow is the office holiday party, please RSVP by EOD.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": false,
+      "directive_type": "no_op",
+      "structured_adjustment": null
+    }
+  },
+  {
+    "note": "Heads up: next month the cafeteria will trial a new coffee blend.",
+    "capacity_kwh": 200,
+    "expected": {
+      "applies": false,
+      "directive_type": "no_op",
+      "structured_adjustment": null
+    }
+  }
+]
