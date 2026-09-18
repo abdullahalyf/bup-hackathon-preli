@@ -86,6 +86,16 @@ def run_case(client: httpx.Client, base_url: str, case: dict) -> dict:
 
     case_id = case.get("id", "?")
     payload = case["input"]
+
+    if not isinstance(payload, dict) or "hours" not in payload or "battery" not in payload:
+        return {
+            "id": case_id,
+            "status": "skipped",
+            "latency_ms": 0.0,
+            "problems": ["case input missing 'hours' or 'battery'"],
+            "cost_diff": None,
+        }
+
     expected = case.get("expected_output") or {}
     url = base_url.rstrip("/") + "/optimize-energy"
 
@@ -141,10 +151,15 @@ def run_case(client: httpx.Client, base_url: str, case: dict) -> dict:
             )
 
     try:
+        applied_directives = [
+            entry
+            for entry in body.get("directive_interpretation", [])
+            if entry.get("applies") is True
+        ]
         violations = replay_check(
             payload["hours"],
             payload["battery"],
-            body.get("directive_interpretation", []),
+            applied_directives,
             body,
         )
     except Exception as exc:  # pragma: no cover - validator bug
@@ -209,17 +224,17 @@ def main() -> int:
 
     print("-" * 78)
     if latencies:
-        p95 = (
-            statistics.quantiles(latencies, n=20)[-1]
-            if len(latencies) >= 5
-            else max(latencies)
-        )
+        if len(latencies) >= 20:
+            p95 = statistics.quantiles(latencies, n=20)[-1]
+            latency_label = f"p95_latency={p95:.1f}ms"
+        else:
+            latency_label = f"max_latency(n<20)={max(latencies):.1f}ms"
     else:
-        p95 = 0.0
+        latency_label = "p95_latency=0.0ms"
     print(
         f"summary: total={len(cases)} failed={failures} "
         f"avg_latency={statistics.mean(latencies) if latencies else 0:.1f}ms "
-        f"p95_latency={p95:.1f}ms"
+        f"{latency_label}"
     )
 
     return 1 if failures else 0
