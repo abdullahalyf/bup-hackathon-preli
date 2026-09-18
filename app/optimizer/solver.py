@@ -79,19 +79,42 @@ def build_limits(
     }
 
 
-def _fallback_plan(hours: list[dict], battery: dict) -> dict:
+def _fallback_plan(hours: Any, battery: Any) -> dict:
     """Safe baseline: serve demand from solar, then grid; keep battery idle."""
-    initial = float(battery.get("initial_energy_kwh", 0.0))
+    initial = 0.0
+    if isinstance(battery, dict):
+        try:
+            initial = float(battery.get("initial_energy_kwh", 0.0))
+        except (ValueError, TypeError):
+            initial = 0.0
+
     plan = []
     total_cost = 0.0
-    sorted_hours = sorted(hours, key=lambda x: x.get("hour", 0))
+    safe_hours = []
+    if isinstance(hours, list):
+        safe_hours = [h for h in hours if isinstance(h, dict)]
+    try:
+        sorted_hours = sorted(safe_hours, key=lambda x: x.get("hour", 0))
+    except Exception:
+        sorted_hours = safe_hours
+
     for entry in sorted_hours:
-        solar_used = min(float(entry.get("solar_kwh", 0.0)), float(entry.get("demand_kwh", 0.0)))
-        grid = float(entry.get("demand_kwh", 0.0)) - solar_used
-        tariff = float(entry.get("tariff_bdt_per_kwh", 0.0))
+        try:
+            h_idx = int(entry.get("hour", 0))
+            demand = float(entry.get("demand_kwh", 0.0))
+            solar = float(entry.get("solar_kwh", 0.0))
+            tariff = float(entry.get("tariff_bdt_per_kwh", 0.0))
+        except (ValueError, TypeError):
+            h_idx = 0
+            demand = 0.0
+            solar = 0.0
+            tariff = 0.0
+
+        solar_used = min(max(0.0, solar), max(0.0, demand))
+        grid = max(0.0, demand - solar_used)
         plan.append(
             {
-                "hour": entry.get("hour", 0),
+                "hour": h_idx,
                 "grid_kwh": round(grid, 6),
                 "solar_used_kwh": round(solar_used, 6),
                 "battery_action": "idle",
@@ -100,13 +123,16 @@ def _fallback_plan(hours: list[dict], battery: dict) -> dict:
             }
         )
         total_cost += grid * tariff
+
     return {
         "hourly_plan": plan,
         "total_grid_kwh": round(sum(entry["grid_kwh"] for entry in plan), 6),
         "total_cost_bdt": round(total_cost, 6),
         "peak_grid_kwh": round(max((entry["grid_kwh"] for entry in plan), default=0.0), 6),
         "status": "fallback",
+        "applied_directives": [],
     }
+
 
 
 def _solve_lp_attempt(
@@ -222,13 +248,13 @@ def _solve_lp_attempt(
             net = c_val - d_val
             if net > 1e-7:
                 action = "charge"
-                c_post = round(net, 6)
+                c_post = round(min(net, max_charge[h]), 6)
                 d_post = 0.0
                 b_kwh = c_post
             elif net < -1e-7:
                 action = "discharge"
                 c_post = 0.0
-                d_post = round(-net, 6)
+                d_post = round(min(-net, max_discharge[h]), 6)
                 b_kwh = d_post
             else:
                 action = "idle"
@@ -238,6 +264,8 @@ def _solve_lp_attempt(
 
             s_post = round(min(max(0.0, s_val), eff_solar[h]), 6)
             curr_E = round(curr_E + c_post - d_post, 6)
+            if h == 23 and abs(curr_E - initial) < 1e-4:
+                curr_E = initial
 
             demand = float(sorted_hours[h]["demand_kwh"])
             grid = round(demand + c_post - d_post - s_post, 6)
@@ -257,15 +285,34 @@ def _solve_lp_attempt(
             )
             total_cost += grid * float(sorted_hours[h]["tariff_bdt_per_kwh"])
 
+        applied_directives = []
+        for d in directives or []:
+            if not d.get("applies", True):
+                continue
+            dtype = d.get("directive_type")
+            if dtype == "no_op":
+                continue
+            if dtype == "max_grid_window" and not allow_max_grid:
+                continue
+            if dtype == "minimum_battery_reserve" and not allow_reserve:
+                continue
+            if dtype == "no_discharge_window" and not allow_no_discharge:
+                continue
+            if dtype == "no_charge_window" and not allow_no_charge:
+                continue
+            applied_directives.append(d)
+
         return {
             "hourly_plan": plan,
             "total_grid_kwh": round(sum(entry["grid_kwh"] for entry in plan), 6),
             "total_cost_bdt": round(total_cost, 6),
             "peak_grid_kwh": round(max((entry["grid_kwh"] for entry in plan), default=0.0), 6),
             "status": status_label,
+            "applied_directives": applied_directives,
         }
     except Exception:
         return None
+
 
 
 def optimize(hours: list[dict], battery: dict, directives: list[dict]) -> dict:

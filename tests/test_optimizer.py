@@ -329,3 +329,142 @@ def test_replay_check_wrong_totals():
     violations = replay_check(inp["hours"], inp["battery"], directives, broken)
     assert any("Reported total_cost_bdt" in v for v in violations)
     assert any("Reported total_grid_kwh" in v for v in violations)
+
+
+def test_zero_tariff():
+    from app.optimizer.replay import replay_check
+    inp, _ = _get_base_valid_case()
+    hours = [dict(h, tariff_bdt_per_kwh=0.0) for h in inp["hours"]]
+    battery = inp["battery"]
+    res = optimize(hours, battery, [])
+    assert res["status"] == "optimal"
+    assert res["total_cost_bdt"] == 0.0
+    assert replay_check(hours, battery, res["applied_directives"], res) == []
+
+
+def test_zero_solar():
+    from app.optimizer.replay import replay_check
+    inp, _ = _get_base_valid_case()
+    hours = [dict(h, solar_kwh=0.0) for h in inp["hours"]]
+    battery = inp["battery"]
+    res = optimize(hours, battery, [])
+    assert res["status"] == "optimal"
+    assert all(e["solar_used_kwh"] == 0.0 for e in res["hourly_plan"])
+    assert replay_check(hours, battery, res["applied_directives"], res) == []
+
+
+def test_huge_solar():
+    from app.optimizer.replay import replay_check
+    inp, _ = _get_base_valid_case()
+    hours = [dict(h, solar_kwh=10000.0) for h in inp["hours"]]
+    battery = inp["battery"]
+    res = optimize(hours, battery, [])
+    assert res["status"] == "optimal"
+    assert res["total_grid_kwh"] == 0.0
+    assert res["total_cost_bdt"] == 0.0
+    assert replay_check(hours, battery, res["applied_directives"], res) == []
+
+
+def test_initial_equals_capacity():
+    from app.optimizer.replay import replay_check
+    inp, _ = _get_base_valid_case()
+    battery = dict(inp["battery"], initial_energy_kwh=inp["battery"]["capacity_kwh"])
+    res = optimize(inp["hours"], battery, [])
+    assert res["status"] == "optimal"
+    assert replay_check(inp["hours"], battery, res["applied_directives"], res) == []
+
+
+def test_minimum_equals_initial():
+    from app.optimizer.replay import replay_check
+    inp, _ = _get_base_valid_case()
+    battery = dict(inp["battery"], minimum_energy_kwh=inp["battery"]["initial_energy_kwh"])
+    res = optimize(inp["hours"], battery, [])
+    assert res["status"] == "optimal"
+    assert replay_check(inp["hours"], battery, res["applied_directives"], res) == []
+
+
+def test_reserve_above_capacity_relaxation():
+    from app.optimizer.replay import replay_check
+    inp, _ = _get_base_valid_case()
+    battery = inp["battery"]
+    # Directive demands reserve greater than capacity
+    excessive_reserve = [
+        {
+            "note_index": 0,
+            "applies": True,
+            "directive_type": "minimum_battery_reserve",
+            "structured_adjustment": {"hours": [12], "minimum_energy_kwh": battery["capacity_kwh"] + 100},
+        }
+    ]
+    res = optimize(inp["hours"], battery, excessive_reserve)
+    assert res["status"] == "relaxed"
+    assert replay_check(inp["hours"], battery, res["applied_directives"], res) == []
+
+
+def test_conflicting_directives_relaxation():
+    from app.optimizer.replay import replay_check
+    inp, _ = _get_base_valid_case()
+    battery = inp["battery"]
+    # Force hour 0 to have 0 solar, 0 grid, 0 discharge when demand > 0 -> infeasible
+    hours = [dict(h) for h in inp["hours"]]
+    hours[0]["solar_kwh"] = 0.0
+    hours[0]["demand_kwh"] = 50.0
+    conflicting = [
+        {
+            "note_index": 0,
+            "applies": True,
+            "directive_type": "max_grid_window",
+            "structured_adjustment": {"hours": [0], "max_grid_kwh": 0.0},
+        },
+        {
+            "note_index": 1,
+            "applies": True,
+            "directive_type": "no_discharge_window",
+            "structured_adjustment": {"hours": [0]},
+        },
+    ]
+    res = optimize(hours, battery, conflicting)
+    assert res["status"] == "relaxed"
+    assert replay_check(hours, battery, res["applied_directives"], res) == []
+
+
+def test_optimize_never_raises_on_corrupt_input():
+    # Corrupt / missing inputs must never raise and return a valid schema dict
+    for bad_h, bad_b, bad_d in [
+        (None, None, None),
+        ([], {}, []),
+        ([{"hour": 0}], {}, []),
+        ([{"hour": h} for h in range(24)], {"initial_energy_kwh": 50}, []),
+        (
+            [{"hour": h, "demand_kwh": 10, "solar_kwh": 0, "tariff_bdt_per_kwh": 5} for h in range(24)],
+            {"capacity_kwh": 50, "initial_energy_kwh": 100, "minimum_energy_kwh": 10, "max_charge_kwh_per_hour": 10, "max_discharge_kwh_per_hour": 10},
+            [],
+        ),
+    ]:
+        res = optimize(bad_h, bad_b, bad_d)
+        assert isinstance(res, dict)
+        assert "hourly_plan" in res
+        assert "total_cost_bdt" in res
+        assert "total_grid_kwh" in res
+        assert "peak_grid_kwh" in res
+        assert "status" in res
+
+
+def test_solve_time_under_200ms():
+    import time
+    import json
+    from pathlib import Path
+
+    data_path = Path(__file__).parent.parent / "data" / "public_samples.json"
+    with open(data_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    for case in data["cases"]:
+        inp = case["input"]
+        exp = case["expected_output"]
+        directives = [d for d in exp["directive_interpretation"] if d.get("applies")]
+        t0 = time.perf_counter()
+        res = optimize(inp["hours"], inp["battery"], directives)
+        elapsed = time.perf_counter() - t0
+        assert elapsed < 0.20, f"Case {case['id']} took {elapsed:.4f}s > 0.20s"
+        assert res["status"] == "optimal"
