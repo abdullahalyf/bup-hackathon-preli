@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import socket
 import subprocess
@@ -14,7 +15,7 @@ from urllib.request import urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 LIVE_URL = "https://gridwise-production-0e08.up.railway.app"
-BRANCHES = ("taseen", "tamjid", "jubayer", "alif", "alif-fix")
+BRANCHES = ("alif", "jubayer", "taseen")
 DOC_CONFLICTS = {"AGENTS.md", "CLAUDE.md"}
 
 
@@ -45,7 +46,8 @@ def sample_check(url: str | None = None) -> tuple[str, str, list[str]]:
     if runner_not_ready():
         return "SKIPPED (runner not ready)", "-", []
     try:
-        result = run(sys.executable, str(script), *([url] if url else []), timeout=240)
+        result = run(sys.executable, str(script), *([url] if url else []), timeout=240,
+                     env={**os.environ, "PYTHONPATH": str(ROOT) + os.pathsep + os.environ.get("PYTHONPATH", "")})
     except subprocess.TimeoutExpired:
         return "timeout", "-", ["sample runner timed out"]
     output = result.stdout + result.stderr
