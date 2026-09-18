@@ -277,7 +277,7 @@ The canonical hackathon deployment is live at:
 - `GET /health` returns `{"status":"ok"}`.
 - `POST /optimize-energy` accepts the same JSON shape as the local server.
 
-The prebuilt Docker image is published at `ghcr.io/abdullahalyf/gridwise:v1`. Railway redeploys automatically when `main` is updated.
+The prebuilt Docker image is published at `ghcr.io/abdullahalyf/gridwise:v1`. Deploy Railway explicitly with `railway up --detach --service gridwise` after updating `main`.
 
 ```bash
 docker pull ghcr.io/abdullahalyf/gridwise:v1

@@ -1,5 +1,7 @@
 # GridWise — Status & Handoff
 
+> Historical handoff: the findings below were recorded before the current deployment. On 2026-09-18, `main` at `6b4d4fd` passed 113 API tests and all 10 live public samples (interpretation, cost within 0.01 BDT, and replay). The GHCR `v1` image was rebuilt from that commit and verified by a local `/health` check and authenticated registry pull. GHCR package visibility remains private, the video link remains TBD, and recent Railway logs show primary LLM rate limits. Railway is deployed with `railway up --detach --service gridwise`.
+
 Last updated: 2026-09-18 20:22 local (`origin/alif` @ `3379393`).
 
 ## Skills used in this session
