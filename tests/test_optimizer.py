@@ -231,3 +231,101 @@ def test_all_public_samples():
         assert abs(res["total_cost_bdt"] - exp["total_cost_bdt"]) <= 0.01
         assert abs(res["total_grid_kwh"] - exp["total_grid_kwh"]) <= 0.01
         assert abs(res["peak_grid_kwh"] - exp["peak_grid_kwh"]) <= 0.01
+
+
+def test_replay_check_all_public_samples():
+    import json
+    from pathlib import Path
+    from app.optimizer.replay import replay_check
+
+    data_path = Path(__file__).parent.parent / "data" / "public_samples.json"
+    with open(data_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    for case in data["cases"]:
+        inp = case["input"]
+        exp = case["expected_output"]
+        directives = [
+            d for d in exp["directive_interpretation"] if d.get("applies") is True
+        ]
+        # Replay expected reference
+        violations_exp = replay_check(inp["hours"], inp["battery"], directives, exp)
+        assert violations_exp == [], f"{case['id']} expected output failed replay: {violations_exp}"
+
+        # Replay our optimizer output
+        res = optimize(inp["hours"], inp["battery"], directives)
+        violations_opt = replay_check(inp["hours"], inp["battery"], directives, res)
+        assert violations_opt == [], f"{case['id']} optimizer output failed replay: {violations_opt}"
+
+
+def _get_base_valid_case():
+    import json
+    from pathlib import Path
+    data_path = Path(__file__).parent.parent / "data" / "public_samples.json"
+    with open(data_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    case0 = data["cases"][0]
+    import copy
+    return copy.deepcopy(case0["input"]), copy.deepcopy(case0["expected_output"])
+
+
+def test_replay_check_bad_balance():
+    import copy
+    from app.optimizer.replay import replay_check
+
+    inp, exp = _get_base_valid_case()
+    directives = [d for d in exp["directive_interpretation"] if d.get("applies")]
+    broken = copy.deepcopy(exp)
+    broken["hourly_plan"][0]["grid_kwh"] += 15.0
+
+    violations = replay_check(inp["hours"], inp["battery"], directives, broken)
+    assert any("energy balance violated" in v for v in violations)
+
+
+def test_replay_check_violated_no_charge():
+    import copy
+    from app.optimizer.replay import replay_check
+
+    inp, exp = _get_base_valid_case()
+    directives = [
+        {
+            "note_index": 0,
+            "applies": True,
+            "directive_type": "no_charge_window",
+            "structured_adjustment": {"hours": [5]},
+        }
+    ]
+    broken = copy.deepcopy(exp)
+    broken["hourly_plan"][5]["battery_action"] = "charge"
+    broken["hourly_plan"][5]["battery_kwh"] = 10.0
+
+    violations = replay_check(inp["hours"], inp["battery"], directives, broken)
+    assert any("charge amount" in v and "exceeds max charge limit" in v for v in violations)
+
+
+def test_replay_check_wrong_final_energy():
+    import copy
+    from app.optimizer.replay import replay_check
+
+    inp, exp = _get_base_valid_case()
+    directives = [d for d in exp["directive_interpretation"] if d.get("applies")]
+    broken = copy.deepcopy(exp)
+    broken["hourly_plan"][23]["battery_energy_after_kwh"] += 20.0
+
+    violations = replay_check(inp["hours"], inp["battery"], directives, broken)
+    assert any("End-of-day battery energy" in v for v in violations)
+
+
+def test_replay_check_wrong_totals():
+    import copy
+    from app.optimizer.replay import replay_check
+
+    inp, exp = _get_base_valid_case()
+    directives = [d for d in exp["directive_interpretation"] if d.get("applies")]
+    broken = copy.deepcopy(exp)
+    broken["total_cost_bdt"] += 100.0
+    broken["total_grid_kwh"] += 50.0
+
+    violations = replay_check(inp["hours"], inp["battery"], directives, broken)
+    assert any("Reported total_cost_bdt" in v for v in violations)
+    assert any("Reported total_grid_kwh" in v for v in violations)
