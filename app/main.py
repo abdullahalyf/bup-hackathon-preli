@@ -25,6 +25,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.interpreter import interpret_notes
 from app.optimizer import optimize
@@ -459,16 +460,6 @@ def health():
     return {"status": "ok"}
 
 
-@app.get("/", include_in_schema=False)
-def root_index():
-    if FRONTEND_INDEX.exists():
-        return FileResponse(FRONTEND_INDEX)
-    return JSONResponse(
-        status_code=200,
-        content={"status": "ok", "service": "GridWise", "docs": "/docs"},
-    )
-
-
 @app.post("/optimize-energy")
 def optimize_energy(payload: OptimizeRequest, request: Request):
     """Production endpoint.
@@ -552,6 +543,12 @@ def optimize_energy(payload: OptimizeRequest, request: Request):
         interp_ms, opt_ms, total_ms, False, interp_error,
     )
     return response
+
+
+# Serve the frontend after API routes so it cannot intercept /optimize-energy.
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
+if FRONTEND_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 
 
 # ----------------------------------------------------------- local entrypoint
