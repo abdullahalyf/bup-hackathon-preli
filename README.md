@@ -1,294 +1,331 @@
-# GridWise
+<div align="center">
 
-> **LLM-assisted 24-hour battery + grid schedule builder.** Operator types free-text notes; GridWise turns them into machine-checkable directives, then solves a minimum-cost schedule with hard energy and reserve constraints.
+![GridWise Banner](docs/banner.png)
 
-GridWise is a small public FastAPI service built for the BUP CSE Fest 2026 hackathon preliminary.
+# ⚡ GridWise
 
-- `POST /optimize-energy` accepts 24 hours of demand / solar / tariff data plus 1–3 free-text operator notes
-- An LLM interpreter turns each note into a structured directive (`solar_reduction`, `minimum_battery_reserve`, `no_charge_window`, `no_discharge_window`, `max_grid_window`, `no_op`)
-- Deterministic guardrails validate and clamp the directives
-- A linear-program optimizer builds the minimum-cost battery + grid plan
-- An automated judge replays and scores the response against the same constraints
+### *LLM-assisted, minimum-cost 24-hour battery + grid scheduler.*
+
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Chart.js](https://img.shields.io/badge/Chart.js-4.4.7-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white)](https://www.chartjs.org/)
+[![SciPy](https://img.shields.io/badge/SciPy-HiGHS-8CAAE6?style=for-the-badge&logo=scipy&logoColor=white)](https://scipy.org/)
+[![License](https://img.shields.io/badge/Hackathon-BUP_CSE_Fest_2026-FFD43B?style=for-the-badge)](#)
+
+A small, self-contained FastAPI service that turns a campus operator's **free-text notes** into a **minimum-cost battery + grid schedule** for the next 24 hours — solved end-to-end by an LLM directive interpreter and a deterministic linear program.
+
+> **Built in one weekend for the BUP CSE Fest 2026 hackathon preliminary.**
+
+</div>
 
 ---
 
-## Architecture
+## 📌 Summary
+
+Campus microgrids balance three resources at once — **grid power**, **rooftop solar**, and a **finite battery**. The cheapest 24-hour plan depends on the tariff curve, the weather, and the operator's judgement calls (e.g. *"reserve half the battery for the 7 PM peak"*).
+
+**GridWise** lets the operator describe those judgement calls in plain English. It validates them against deterministic guardrails, then solves an LP for the actual hourly plan. The same plan is later replayed by an automated judge to confirm it satisfies every constraint.
+
+| Method | Endpoint              | Purpose                          |
+| ------ | --------------------- | -------------------------------- |
+| `GET`  | `/health`             | Liveness probe                   |
+| `POST` | `/optimize-energy`    | 24-hour minimum-cost battery plan |
+
+---
+
+## 🧠 Architecture Overview
 
 ```
-                          ┌───────────────────────────┐
-   Operator notes ──────▶│  Pydantic request schema  │
-   (1–3 English lines)   │   (app/main.py, schemas)  │
-                          └─────────────┬─────────────┘
-                                        │
-                          ┌─────────────▼─────────────┐
-                          │   LLM Interpreter         │
-                          │   interpret_notes(...)    │
-                          │   structured directive +  │
-                          │   deterministic guardrail │
-                          └─────────────┬─────────────┘
-                                        │ applies == true
-                          ┌─────────────▼─────────────┐
-                          │   LP Optimizer (HiGHS)    │
-                          │   optimize(...)           │
-                          │   min Σ grid×tariff       │
-                          └─────────────┬─────────────┘
-                                        │
-                          ┌─────────────▼─────────────┐
-                          │   HTTP response (strict   │
-                          │   JSON, 7 top-level keys) │
-                          └───────────────────────────┘
-                                        │
-                          ┌─────────────▼─────────────┐
-                          │   replay_check (judge)    │
-                          │   energy / reserve /      │
-                          │   neutrality checks       │
-                          └───────────────────────────┘
+Operator notes (1–3 lines of English)
+        │
+        ▼
+┌──────────────────────────────────────────────┐
+│  LLM Interpreter  (interpret_notes)          │
+│  ─ primary  : Gemini  via OpenAI-compat API │
+│  ─ fallback : Groq    via OpenAI-compat API │
+│  ─ offline  : deterministic regex extractor │
+└──────────────────┬───────────────────────────┘
+                   │  structured directive(s)
+                   ▼
+┌──────────────────────────────────────────────┐
+│  Deterministic Guardrails                    │
+│  ─ clamp hours to 0..23, asc, unique        │
+│  ─ solar reduction factor ∈ [0, 1]          │
+│  ─ battery reserve ∈ [0, capacity_kwh]      │
+│  ─ overlapping windows union sensibly       │
+└──────────────────┬───────────────────────────┘
+                   │  enforced directive set
+                   ▼
+┌──────────────────────────────────────────────┐
+│  LP Optimizer  (scipy.optimize.linprog)     │
+│  ─ solver : HiGHS                            │
+│  ─ minimize  Σ grid[h] × tariff[h]          │
+│  ─ subject to per-hour SoC bounds,           │
+│    charge/discharge rate caps, neutrality    │
+│  ─ fallback: solar-then-grid baseline        │
+└──────────────────┬───────────────────────────┘
+                   │
+                   ▼
+       Strict JSON response
+       (7 top-level keys, hourly plan = 24 rows)
 ```
 
----
+### Model & Provider
+- Any **OpenAI-compatible chat-completions** endpoint can drive the interpreter. The only required env vars are `LLM_API_KEY`, `LLM_BASE_URL`, and `LLM_MODEL`.
+- A **Groq** secondary is wired in via `LLM_FALLBACK_*` and is used automatically when the primary call fails or is rate-limited.
+- When no key is configured, a built-in **regex extractor** maps notes to directives so the service stays runnable for local dev and CI.
 
-## Team & ownership
+### LLM Role
+The LLM's sole job is **parsing**: it receives 1–3 operator notes plus the directive type catalog, and returns a JSON list of structured directives (`solar_reduction`, `minimum_battery_reserve`, `no_charge_window`, `no_discharge_window`, `max_grid_window`, or `no_op`). The LLM never sees the demand data, never touches the solver, and never appears in the response.
 
-| Member  | Branch   | Role                                    | Owns |
-|---------|----------|-----------------------------------------|------|
-| Alif    | `alif`   | Head / API integrator / merges to `main` | `app/main.py`, `app/schemas.py`, `app/__init__.py`, `app/interpreter/__init__.py`, `app/optimizer/__init__.py`, `requirements.txt`, `.env.example`, `.gitignore`, `Dockerfile`, `.dockerignore`, `docs/*`, `tasks/*`, `AGENTS.md`, `CLAUDE.md` |
-| Taseen  | `taseen` | Optimizer engineer                      | `app/optimizer/solver.py`, `app/optimizer/replay.py`, `tests/test_optimizer.py` |
-| Tamjid  | `tamjid` | LLM engineer                            | `app/interpreter/core.py`, `prompt.py`, `llm_client.py`, `normalize.py`, `fallback.py`, `tests/test_interpreter.py` |
-| Jubayer | `jubayer`| DevOps + QA + Docs + frontend           | `scripts/*`, `tests/test_api.py`, `data/paraphrases.json`, `frontend/*`, `README.md`, `docs/VIDEO_SCRIPT.md` |
+### Guardrails
+Every directive returned by the LLM is validated by a deterministic guardrail **before** it reaches the optimizer. Specifically:
+- `applies` is a boolean (false only for `no_op`).
+- Window hours are clamped to `[0, 23]`, sorted, deduplicated, and treated as **start-inclusive / end-exclusive**.
+- Overlapping constraints combine deterministically: solar factors multiply, reserve floors take the maximum, grid caps take the minimum, no-charge / no-discharge windows union.
+- Unstructured or unparseable notes are mapped to `no_op`, never to a half-formed constraint.
 
-Branch discipline: only Alif pushes to `main`. Everyone else pushes to their own branch.
-
----
-
-## Model & provider
-
-The interpreter speaks to **any OpenAI-compatible chat-completions endpoint** via the official `openai` Python SDK. Configure in `.env`:
-
-| Variable                | Meaning                                      |
-|-------------------------|----------------------------------------------|
-| `LLM_API_KEY`           | Required. API key for the primary provider.  |
-| `LLM_BASE_URL`          | Optional. Defaults to OpenAI's public URL.   |
-| `LLM_MODEL`             | Required. Provider model id (e.g. `gpt-4o-mini`). |
-| `LLM_FALLBACK_API_KEY`  | Optional. Secondary key used if the primary call fails or is rate-limited. |
-| `LLM_FALLBACK_BASE_URL` | Optional. Fallback base URL.                 |
-| `LLM_FALLBACK_MODEL`    | Optional. Fallback model id.                 |
-| `PORT`                  | Optional. Defaults to `8000`.                |
-
-When no key is present, `app/interpreter/core.py` falls back to a deterministic regex extractor so the service stays runnable for development and CI.
-
----
-
-## Guardrails (interpreter)
-
-The interpreter never returns an unstructured string. Every directive is validated by deterministic guardrails before reaching the optimizer:
-
-- `applies` is a boolean; `no_op` is the only type with `applies: false`.
-- Time windows are integer hours 0–23 in ascending order, unique, and start-inclusive / end-exclusive (so 1 PM → 3 PM means `[13, 14]`).
-- `factor` for `solar_reduction` is clamped to `[0, 1]`.
-- `minimum_energy_kwh` for `minimum_battery_reserve` is clamped to `[0, capacity_kwh]`.
-- `max_grid_kwh` for `max_grid_window` must be non-negative and finite.
-- Overlapping solar factors multiply; reserve floors take the maximum; grid caps take the minimum; no-charge and no-discharge windows union.
-- Any note that doesn't match a known directive type becomes `no_op` with `structured_adjustment: null`.
-
----
-
-## Optimizer formulation
-
-Given 24 hours `h` of `demand[h]`, `effective_solar[h]`, `tariff[h]`, `battery.max_charge`, `battery.max_discharge`, `battery.min`, `battery.cap`, and the directives above:
+### Optimizer / Solver
+The optimizer is a 24-hour LP minimized with `scipy.optimize.linprog(method="highs")`:
 
 ```
-for each hour h:
-    grid[h], solar_used[h], charge[h], discharge[h] >= 0
-    grid[h] + solar_used[h] + discharge[h] == demand[h] + charge[h]
-    solar_used[h] <= effective_solar[h]
-    charge[h]    <= max_charge_kwh_per_hour
-    discharge[h] <= max_discharge_kwh_per_hour
-    min_energy <= battery_after[h] <= capacity_kwh
-
-battery_after[0] = initial_energy_kwh + charge[0] - discharge[0]
-battery_after[h] = battery_after[h-1] + charge[h] - discharge[h]
-battery_after[23] == initial_energy_kwh          # neutrality
-
-minimize Σ grid[h] × tariff[h] + ε·(charge[h] + discharge[h])
+minimize    Σ grid[h] × tariff[h]  +  ε·(charge[h] + discharge[h])
+subject to  grid[h] + solar_used[h] + discharge[h] == demand[h] + charge[h]      ∀ h
+            solar_used[h] ≤ effective_solar[h]
+            charge[h]    ≤ battery.max_charge_kwh_per_hour
+            discharge[h] ≤ battery.max_discharge_kwh_per_hour
+            battery.min_energy_kwh ≤ battery_after[h] ≤ battery.capacity_kwh
+            battery_after[23] == battery.initial_energy_kwh                (neutrality)
 ```
 
-`ε` is a tiny penalty that discourages pointless cycling without changing the optimum for any non-degenerate input. The solver is HiGHS through `scipy.optimize.linprog`. If HiGHS can't prove optimality, the service returns a `status: "relaxed"` plan; if the model can't be built at all, it falls back to a safe solar-then-grid baseline with `status: "fallback"`.
+If HiGHS reports optimality, the response is `status: "optimal"`. If it returns a feasible but not provably-optimal point, the plan is tagged `status: "relaxed"`. If the model cannot be built at all, the service returns a safe **solar-then-grid baseline** with `status: "fallback"`. The judge later runs `replay_check` to independently confirm every constraint holds.
 
 ---
 
-## Public API
+## 🛠️ Tech Stack
 
-| Method | Path                | Body / Returns                                                              |
-|--------|---------------------|-----------------------------------------------------------------------------|
-| GET    | `/health`           | `{"status":"ok"}`                                                           |
-| POST   | `/optimize-energy`  | Request: `scenario_id`, `operator_notes` (1–3), `hours` (24), `battery`. Response: `scenario_id`, `directive_interpretation`, `hourly_plan`, `total_grid_kwh`, `total_cost_bdt`, `peak_grid_kwh`, `plan_summary`. |
-
-The full request / response shape, the seven supported directive types, and the judge replay rules live in [`docs/CONTRACTS.md`](docs/CONTRACTS.md).
+| Layer       | Technology                                       | Role                                       |
+| ----------- | ------------------------------------------------ | ------------------------------------------ |
+| Web         | **FastAPI** + **Uvicorn**                        | HTTP API, Pydantic v2 validation, async     |
+| LLM client  | **OpenAI Python SDK**                            | OpenAI-compatible chat-completions         |
+| Optimizer   | **SciPy** (`linprog`, method `highs`)            | Linear-program solver                      |
+| Validation  | **Pydantic v2**                                  | Strict request / response schemas          |
+| Frontend    | **HTML / CSS / vanilla JS**                      | Single-file operator console               |
+| Charts      | **Chart.js 4.4.7** (vendored UMD)                | Stacked energy + SoC + tariff visualization |
+| Typography  | **Inter** + **JetBrains Mono** (Google Fonts)    | Body + numeric cells                       |
+| Packaging   | **Docker**                                       | Reproducible container build               |
 
 ---
 
-## Quickstart
+## ⚙️ Source Setup & Dependencies
+
+> **Prerequisites:** Python **3.11+**, Git, ~200 MB free disk.
 
 ```bash
-# 1. Clone and enter the repo
+# 1. Clone the repo
 git clone https://github.com/abdullahalyf/bup-hackathon-preli.git
 cd bup-hackathon-preli
 
-# 2. Create a virtualenv and install
+# 2. Create a virtual environment
+#    Windows (PowerShell)
 python -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt      # PowerShell
-# source .venv/bin/activate && pip install -r requirements.txt   # bash
+.venv\Scripts\python.exe -m pip install --upgrade pip
+.venv\Scripts\python.exe -m pip install -r requirements.txt
 
-# 3. Optional: configure an LLM provider
-cp .env.example .env
-# edit .env and set LLM_API_KEY / LLM_MODEL
-
-# 4. Run the API
-.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-
-# 5. Smoke test
-curl -s http://127.0.0.1:8000/health
-# {"status":"ok"}
+#    macOS / Linux
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-### `curl` example for `/optimize-energy`
+All Python dependencies are pinned in [`requirements.txt`](requirements.txt): `fastapi`, `uvicorn[standard]`, `pydantic>=2`, `openai`, `scipy`, `numpy`, `requests`, `httpx`, `pytest`, `python-dotenv`.
 
-The full 24-hour payload for every case lives in [`data/public_samples.json`](data/public_samples.json). A minimal demo request:
+---
 
-```bash
-curl -X POST http://127.0.0.1:8000/optimize-energy \
-  -H "content-type: application/json" \
-  -d @- <<'JSON'
-{
-  "scenario_id": "smoke-test",
-  "operator_notes": [
-    "Panel cleaning halves solar from 12:00 to 14:00.",
-    "Reserve 50% of the battery from 18:00 until 21:00."
-  ],
-  "hours": [
-    {"hour":0,"demand_kwh":90,"solar_kwh":0,"tariff_bdt_per_kwh":6},
-    {"hour":1,"demand_kwh":85,"solar_kwh":0,"tariff_bdt_per_kwh":6},
-    {"hour":2,"demand_kwh":80,"solar_kwh":0,"tariff_bdt_per_kwh":5},
-    {"hour":3,"demand_kwh":80,"solar_kwh":0,"tariff_bdt_per_kwh":5},
-    {"hour":4,"demand_kwh":85,"solar_kwh":0,"tariff_bdt_per_kwh":5},
-    {"hour":5,"demand_kwh":95,"solar_kwh":0,"tariff_bdt_per_kwh":6},
-    {"hour":6,"demand_kwh":110,"solar_kwh":5,"tariff_bdt_per_kwh":8},
-    {"hour":7,"demand_kwh":130,"solar_kwh":20,"tariff_bdt_per_kwh":10},
-    {"hour":8,"demand_kwh":150,"solar_kwh":50,"tariff_bdt_per_kwh":12},
-    {"hour":9,"demand_kwh":165,"solar_kwh":90,"tariff_bdt_per_kwh":14},
-    {"hour":10,"demand_kwh":175,"solar_kwh":130,"tariff_bdt_per_kwh":16},
-    {"hour":11,"demand_kwh":180,"solar_kwh":160,"tariff_bdt_per_kwh":16},
-    {"hour":12,"demand_kwh":185,"solar_kwh":180,"tariff_bdt_per_kwh":15},
-    {"hour":13,"demand_kwh":180,"solar_kwh":170,"tariff_bdt_per_kwh":14},
-    {"hour":14,"demand_kwh":170,"solar_kwh":140,"tariff_bdt_per_kwh":13},
-    {"hour":15,"demand_kwh":165,"solar_kwh":90,"tariff_bdt_per_kwh":14},
-    {"hour":16,"demand_kwh":170,"solar_kwh":45,"tariff_bdt_per_kwh":18},
-    {"hour":17,"demand_kwh":185,"solar_kwh":10,"tariff_bdt_per_kwh":22},
-    {"hour":18,"demand_kwh":205,"solar_kwh":0,"tariff_bdt_per_kwh":28},
-    {"hour":19,"demand_kwh":215,"solar_kwh":0,"tariff_bdt_per_kwh":30},
-    {"hour":20,"demand_kwh":205,"solar_kwh":0,"tariff_bdt_per_kwh":26},
-    {"hour":21,"demand_kwh":175,"solar_kwh":0,"tariff_bdt_per_kwh":18},
-    {"hour":22,"demand_kwh":135,"solar_kwh":0,"tariff_bdt_per_kwh":10},
-    {"hour":23,"demand_kwh":105,"solar_kwh":0,"tariff_bdt_per_kwh":7}
-  ],
-  "battery": {
-    "capacity_kwh":220,
-    "initial_energy_kwh":110,
-    "minimum_energy_kwh":40,
-    "max_charge_kwh_per_hour":50,
-    "max_discharge_kwh_per_hour":50
-  }
-}
-JSON
+## 🔐 Environment Variables
+
+> The service runs **without any keys** using the built-in regex fallback — useful for the smoke test. To enable real LLM-driven directive interpretation, copy `.env.example` to `.env` and fill in the values below. **Do not commit any of these to version control.**
+
+| Variable                | Required | Meaning                                                                          |
+| ----------------------- | -------- | -------------------------------------------------------------------------------- |
+| `LLM_API_KEY`           | ✅ (for live LLM) | API key for the **primary** OpenAI-compatible provider.                         |
+| `LLM_BASE_URL`          | optional | Base URL for the primary provider.                                               |
+| `LLM_MODEL`             | ✅ (for live LLM) | Provider model id, e.g. `gemini-1.5-flash`, `gpt-4o-mini`.                       |
+| `LLM_FALLBACK_API_KEY`  | optional | API key for the **fallback** provider. Used when the primary fails / rate-limits.|
+| `LLM_FALLBACK_BASE_URL` | optional | Base URL for the fallback provider (e.g. Groq).                                  |
+| `LLM_FALLBACK_MODEL`    | optional | Fallback model id.                                                               |
+| `PORT`                  | optional | HTTP port. Defaults to `8000` if unset.                                          |
+
+Example `.env` (no real secrets shown — fill in your own keys):
+
+```dotenv
+LLM_API_KEY=your-primary-key-here
+LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+LLM_MODEL=gemini-1.5-flash
+
+LLM_FALLBACK_API_KEY=your-fallback-key-here
+LLM_FALLBACK_BASE_URL=https://api.groq.com/openai/v1
+LLM_FALLBACK_MODEL=llama-3.1-70b-versatile
+
+PORT=8000
 ```
 
 ---
 
-## Frontend
-
-Open `frontend/index.html` in a browser (after the API is running) or serve it locally:
+## ▶️ Exact Run Command
 
 ```bash
+# Windows (PowerShell) — works without an LLM key (regex fallback)
+.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# macOS / Linux
+.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+> The repo expects this exact invocation. `PORT` may also be read from `.env`; otherwise it defaults to `8000`.
+
+The API is now live at `http://127.0.0.1:8000`. Open the interactive docs at `http://127.0.0.1:8000/docs` (Swagger UI).
+
+To use the bundled operator console (recommended for judges):
+
+```bash
+# in a second terminal, from the repo root
 .venv\Scripts\python.exe -m http.server 5500 --bind 127.0.0.1 --directory frontend
 # then open http://127.0.0.1:5500/
 ```
 
-The console loads three preset scenarios (SAMPLE-01 / 03 / 05) and lets you edit the notes and the 24-hour JSON before clicking **Optimize**. Results show totals, the directive interpretation table, an hourly plan table, and a Chart.js mixed chart with stacked energy bars + battery SoC line + tariff line.
-
 ---
 
-## Tests & samples
+## 🧪 Testing & API Usage
 
-| Command | What it does |
-|---------|--------------|
-| `pytest tests/test_api.py` | API-layer tests: `/health`, malformed JSON, 23 hours, 0 / 4 notes, duplicate hour, valid sample shape, battery invariant. |
-| `pytest tests/test_interpreter.py` | Interpreter unit tests (owned by Tamjid). |
-| `pytest tests/test_optimizer.py`  | Optimizer unit + replay tests (owned by Taseen). |
-| `python scripts/run_samples.py [BASE_URL]` | Replays all 10 cases from `data/public_samples.json` against a live API and reports per-case interpretation match, cost diff, and any `replay_check` violations. Exits 1 on failure. |
-| `python scripts/paraphrase_check.py` | Runs the 40 paraphrased operator notes in `data/paraphrases.json` through `interpret_notes`, prints per-type and overall accuracy plus average latency. |
-
----
-
-## Docker
-
-The prebuilt image is published to GitHub Container Registry:
+### Run the public-sample replay suite
 
 ```bash
-docker pull ghcr.io/abdullahalyf/bup-hackathon-preli:<IMAGE_TAG>
-docker run --rm -p 8000:8000 \
-  -e LLM_API_KEY=sk-... \
-  -e LLM_MODEL=gpt-4o-mini \
-  ghcr.io/abdullahalyf/bup-hackathon-preli:<IMAGE_TAG>
-# then curl http://127.0.0.1:8000/health
+# defaults to http://localhost:8000, or set BASE_URL
+.venv\Scripts\python.exe scripts\run_samples.py
+# macOS / Linux
+.venv/bin/python scripts/run_samples.py
 ```
 
-`<IMAGE_TAG>` is provided in the team submission channel (e.g. `v0.1.0` or the SHA of the latest `main` commit). To build locally instead:
+It replays all 10 cases from [`data/public_samples.json`](data/public_samples.json) against a live API, reporting per-case interpretation match, cost diff, and any `replay_check` violations. Exits non-zero on failure.
+
+### Run the unit tests
 
 ```bash
-docker build -t gridwise:dev .
-docker run --rm -p 8000:8000 gridwise:dev
+.venv\Scripts\python.exe -m pytest -q
+```
+
+### Smoke test the health endpoint
+
+```bash
+curl -s http://127.0.0.1:8000/health
+# {"status":"ok"}
+```
+
+### Hit `/optimize-energy` with `curl`
+
+```bash
+curl -X POST http://127.0.0.1:8000/optimize-energy \
+  -H "content-type: application/json" \
+  -d '{
+    "scenario_id": "smoke-test",
+    "operator_notes": [
+      "Reserve 50% of the battery from 18:00 to 21:00."
+    ],
+    "hours": [
+      {"hour": 0,  "demand_kwh": 90,  "solar_kwh": 0,   "tariff_bdt_per_kwh": 6},
+      {"hour": 6,  "demand_kwh": 110, "solar_kwh": 5,   "tariff_bdt_per_kwh": 8},
+      {"hour": 12, "demand_kwh": 185, "solar_kwh": 180, "tariff_bdt_per_kwh": 15},
+      {"hour": 18, "demand_kwh": 205, "solar_kwh": 0,   "tariff_bdt_per_kwh": 28},
+      {"hour": 19, "demand_kwh": 215, "solar_kwh": 0,   "tariff_bdt_per_kwh": 30},
+      {"hour": 23, "demand_kwh": 105, "solar_kwh": 0,   "tariff_bdt_per_kwh": 7}
+    ],
+    "battery": {
+      "capacity_kwh": 220,
+      "initial_energy_kwh": 110,
+      "minimum_energy_kwh": 40,
+      "max_charge_kwh_per_hour": 50,
+      "max_discharge_kwh_per_hour": 50
+    }
+  }'
+```
+
+A full 24-hour payload lives in [`data/public_samples.json`](data/public_samples.json). The response always has exactly the seven top-level keys declared in [`docs/CONTRACTS.md`](docs/CONTRACTS.md).
+
+---
+
+## ⚠️ Known Limitations
+
+- **Single 24-hour horizon.** The optimizer treats every hour as a fresh decision; multi-day scheduling, demand forecasting, and rolling replans are out of scope.
+- **Linear-program solver only.** Battery efficiency, degradation cost, and thermal limits are not modeled. Charge / discharge efficiency is assumed to be 100%.
+- **No stateful history.** The service has no memory of previous requests — every call is independent.
+- **LLM interpreter is best-effort.** When keys are configured, the interpreter occasionally produces directives the guardrails clamp or reject; accuracy is reported by `python scripts/paraphrase_check.py`.
+- **Regex fallback is intentionally minimal.** It covers the few directive shapes used in `data/public_samples.json` and is not a substitute for a configured LLM in production.
+- **No authentication.** The service binds to `0.0.0.0` by design for the hackathon demo; do not expose the port to the public internet.
+- **Single-process.** Uvicorn is started with one worker; for higher throughput, scale via a process manager or run the prebuilt container with `--workers 2`.
+
+---
+
+## 👥 Team & Roles
+
+| Member  | Branch    | Role |
+| ------- | --------- | ---- |
+| 🧑‍✈️ **Alif**    | `alif`    | **Leader & Architecture** — FastAPI integration, schemas, exception handling, merge gate to `main`. |
+| ⚙️ **Taseen**  | `taseen`  | **Optimizer & Frontend** — LP solver (`app/optimizer/`), replay validator, operator console UI. |
+| 🤖 **Tamjid**  | `tamjid`  | **LLM Interpreter** — prompt design, LLM client, normalization, deterministic guardrails & fallback. |
+| 🚀 **Jubayer** | `jubayer` | **Deployment & QA** — Docker, hosting, sample runner, frontend base, README & demo video. |
+
+> **Branch discipline:** only Alif merges to `main`; everyone else pushes to their own branch and rebases after each merge.
+
+---
+
+## 📂 Project Structure
+
+```
+bup-hackathon-preli/
+├── app/
+│   ├── main.py                 # FastAPI entry, /health, /optimize-energy
+│   ├── schemas.py              # Pydantic request / response models
+│   ├── interpreter/            # LLM directive interpreter (Gemini / Groq / regex)
+│   │   ├── core.py
+│   │   ├── prompt.py
+│   │   ├── llm_client.py
+│   │   ├── normalize.py
+│   │   └── fallback.py
+│   └── optimizer/              # LP solver + judge replay
+│       ├── solver.py
+│       └── replay.py
+├── frontend/
+│   ├── index.html              # operator console (single file)
+│   └── chart.umd.min.js        # vendored Chart.js 4.4.7
+├── data/
+│   ├── public_samples.json     # 10 worked example cases
+│   └── paraphrases.json        # 40 paraphrased notes for LLM accuracy
+├── scripts/
+│   ├── run_samples.py          # replay public samples against a live API
+│   └── paraphrase_check.py     # LLM accuracy + latency report
+├── tests/                      # pytest suite (api, interpreter, optimizer)
+├── docs/
+│   ├── CONTRACTS.md            # single source of truth for the public API
+│   ├── MASTER_PLAN.md          # team plan + work-unit prompts
+│   ├── VIDEO_SCRIPT.md         # 3-minute demo script
+│   ├── banner.png              # README banner (placeholder)
+│   └── STATUS.md
+├── tasks/                      # per-member task briefs
+├── Dockerfile
+├── requirements.txt
+└── .env.example
 ```
 
 ---
 
-## Live deployment
+## 📜 Credits
 
-The canonical hackathon deployment lives at **`<LIVE_URL>`** (filled in by Alif before submission). The image above is pinned to `<IMAGE_TAG>`.
+Built in four hours by **Alif, Taseen, Tamjid, and Jubayer** for the **BUP CSE Fest 2026** hackathon preliminary. See [`AGENTS.md`](AGENTS.md) for the full team rules and [`tasks/HOW_TO_WORK.md`](tasks/HOW_TO_WORK.md) for the per-member workflow.
 
----
+<div align="center">
 
-## Project structure
+Made with ☕ and ⚡ in Dhaka.
 
-```
-app/
-  __init__.py
-  main.py                 # FastAPI entry, exception handlers, /health, /optimize-energy
-  schemas.py              # Pydantic request models with strict validation
-  interpreter/
-    core.py               # interpret_notes(...) — LLM call + deterministic guardrail
-  optimizer/
-    solver.py             # optimize(...) — LP via scipy.optimize.linprog (HiGHS)
-    replay.py             # replay_check(...) — judge-side replay of the plan
-data/
-  public_samples.json     # 10 fully worked example cases for the sample runner
-  paraphrases.json        # 40 paraphrased notes for the LLM accuracy checker
-scripts/
-  run_samples.py          # replays public_samples.json against a live API
-  paraphrase_check.py     # reports LLM interpreter accuracy + latency
-tests/
-  test_api.py             # FastAPI TestClient — every owned branch of the API
-frontend/
-  index.html              # single-file operator console (Chart.js from cdnjs)
-docs/
-  CONTRACTS.md            # single source of truth for the public API
-  MASTER_PLAN.md          # team plan + work-unit prompts
-  VIDEO_SCRIPT.md         # 3-minute demo script
-tasks/
-  *.md                    # per-member task files (read first!)
-```
-
----
-
-## Credits
-
-Built in four hours by Alif (integration), Taseen (optimizer), Tamjid (LLM interpreter), and Jubayer (DevOps + QA + frontend + docs) for BUP CSE Fest 2026. See [`AGENTS.md`](AGENTS.md) for the full team rules and [`tasks/HOW_TO_WORK.md`](tasks/HOW_TO_WORK.md) for the per-member workflow.
+</div>
