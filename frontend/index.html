@@ -557,6 +557,58 @@ tr.peak .row-mark{color:var(--mag)}
 .minimap .cell.peak{box-shadow:inset 0 -3px 0 var(--mag)}
 .minimap .cell.active{outline:1.5px solid var(--ink);outline-offset:-1px}
 .minimap-axis{display:flex;justify-content:space-between;font-size:9px;color:var(--ink-3);letter-spacing:0.18em;margin-top:5px;padding:0 1px}
+.marquee{overflow:hidden;border-top:1px dashed rgba(13,26,20,0.28);border-bottom:1px dashed rgba(13,26,20,0.28);background:linear-gradient(180deg,rgba(13,26,20,0.05),transparent);padding:6px 0;position:relative;white-space:nowrap}
+.marquee::before,.marquee::after{content:"";position:absolute;top:0;bottom:0;width:40px;z-index:2;pointer-events:none}
+.marquee::before{left:0;background:linear-gradient(90deg,#f3ead3,transparent)}
+.marquee::after{right:0;background:linear-gradient(270deg,#f3ead3,transparent)}
+.marquee-track{display:inline-flex;gap:36px;animation:marquee 38s linear infinite;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.22em;color:var(--ink-2);text-transform:uppercase;padding-left:36px}
+.marquee-track span{position:relative;padding-left:14px}
+.marquee-track span::before{content:"◆";position:absolute;left:-2px;color:var(--phos-d);opacity:0.55;font-size:7px;top:1px}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.card .prev{position:absolute;left:8px;right:8px;bottom:6px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.18em;color:var(--cyan-d);background:rgba(13,26,20,0.92);color:#f3ead3;padding:5px 8px;border-radius:2px;opacity:0;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease;pointer-events:none;border:1px solid var(--cyan-d)}
+.card:hover .prev{opacity:1;transform:translateY(0)}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 0 -2px rgba(13,26,20,0.10),0 12px 24px -10px rgba(13,26,20,0.25)}
+.card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.empty .howto{margin:18px auto 0;max-width:560px;text-align:left;counter-reset:ht;padding:0;list-style:none}
+.empty .howto li{position:relative;padding:6px 0 6px 30px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-2);border-bottom:1px dotted rgba(13,26,20,0.16);counter-increment:ht}
+.empty .howto li::before{content:counter(ht,decimal-leading-zero);position:absolute;left:0;top:6px;font-weight:700;color:var(--phos-d);letter-spacing:0.18em;font-size:10px}
+.empty .howto li:last-child{border-bottom:0}
+.empty .howto li b{color:var(--ink);letter-spacing:0.12em}
+.empty .howto li em{font-family:'Special Elite',serif;font-style:italic;color:var(--mag-d);letter-spacing:0;color:var(--amber-d);text-transform:none}
+.empty .hint-stack{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px}
+.hint-pill{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.18em;color:var(--ink-2);padding:4px 10px;border:1px solid rgba(13,26,20,0.22);border-radius:99px;background:rgba(243,234,211,0.7)}
+.hint-pill .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.hint-pill .dot.phos{background:var(--phos-d);box-shadow:0 0 6px var(--phos-d)}
+.hint-pill .dot.cyan{background:var(--cyan-d);box-shadow:0 0 6px var(--cyan-d)}
+.hint-pill .dot.amber{background:var(--amber-d);box-shadow:0 0 6px var(--amber-d)}
+.hint-pill .dot.mag{background:var(--mag-d);box-shadow:0 0 6px var(--mag-d)}
+.tariff-bands{display:flex;align-items:stretch;gap:0;margin:0 0 8px;border:1px solid rgba(13,26,20,0.20);border-radius:2px;overflow:hidden;height:18px;position:relative;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.20em}
+.tariff-bands .tb{flex:1;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0 4px;color:rgba(13,26,20,0.55);position:relative}
+.tariff-bands .tb.off{background:repeating-linear-gradient(135deg,rgba(34,211,238,0.10) 0 4px,transparent 4px 8px)}
+.tariff-bands .tb.peak{background:repeating-linear-gradient(135deg,rgba(255,61,139,0.18) 0 4px,transparent 4px 8px);color:var(--mag-d)}
+.tariff-bands .tb-axis{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:var(--ink-3);font-size:8px;letter-spacing:0.32em;mix-blend-mode:multiply;pointer-events:none;background:rgba(243,234,211,0.6);padding:0 6px;width:fit-content;margin:0 auto}
+.hist-row{margin-top:14px;border-top:1px dashed rgba(13,26,20,0.28);padding-top:12px}
+.hr-head{display:flex;justify-content:space-between;align-items:baseline;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.20em;color:var(--ink-2);margin-bottom:8px}
+.hr-head .meta{font-size:9px;color:var(--ink-3);letter-spacing:0.18em}
+.hr-strip{display:flex;gap:6px;overflow-x:auto;padding:6px 2px 10px;scrollbar-width:thin;min-height:42px}
+.hr-empty{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-3);letter-spacing:0.18em;padding:10px 0}
+.hr-tick{flex:0 0 auto;min-width:88px;border:1px solid rgba(13,26,20,0.30);background:rgba(243,234,211,0.55);padding:5px 8px;border-radius:2px;position:relative;font-family:'JetBrains Mono',monospace;font-size:9px;cursor:pointer;transition:transform .15s ease,border-color .15s ease}
+.hr-tick:hover{transform:translateY(-2px);border-color:var(--ink)}
+.hr-tick .ht-top{display:flex;justify-content:space-between;color:var(--ink-3);font-size:8px;letter-spacing:0.16em;margin-bottom:3px}
+.hr-tick .ht-mid{font-weight:700;color:var(--ink);font-size:11px;letter-spacing:0.06em;line-height:1.2}
+.hr-tick .ht-bot{color:var(--ink-2);font-size:8px;letter-spacing:0.12em;margin-top:2px}
+.hr-tick .ht-tag{position:absolute;top:-6px;right:6px;font-size:7px;padding:1px 5px;border-radius:99px;background:var(--ink);color:#f3ead3;letter-spacing:0.16em}
+.hr-tick.ok .ht-tag{background:var(--phos-d)}
+.hr-tick.warn .ht-tag{background:var(--amber-d)}
+.hr-tick.err .ht-tag{background:var(--mag-d)}
+.sys-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;margin-top:14px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+.sys-cell{padding:10px 12px;border-right:1px dashed rgba(13,26,20,0.28);display:flex;flex-direction:column;gap:3px;background:rgba(243,234,211,0.4)}
+.sys-cell:last-child{border-right:0}
+.sys-cell .sl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.22em;color:var(--ink-3);text-transform:uppercase}
+.sys-cell .sv{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--ink);letter-spacing:0.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:1100px){.sys-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:680px){.sys-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kbd{display:inline-block;border:1px solid rgba(13,26,20,0.30);border-bottom-width:2px;border-radius:3px;padding:1px 5px;font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(243,234,211,0.7);color:var(--ink);letter-spacing:0.08em}
 
 </style>
 </head>
@@ -594,6 +646,20 @@ tr.peak .row-mark{color:var(--mag)}
   </div>
   <div class="right">TARIFF SLAB · <b>WEEKDAY PEAK</b></div>
 </div>
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>· GRIDWISE · FIELD CONSOLE v5 ·</span>
+    <span>· BUP CSE FEST 2026 · ON-DUTY OPERATOR ·</span>
+    <span>· TARIFF SLAB: WEEKDAY PEAK · OFF-PEAK 23:00–17:00 · PEAK 17:00–23:00 ·</span>
+    <span>· CTRL+ENTER · TRANSMIT · CTRL+K · JUMP TO NOTES · ESC · CLEAR ·</span>
+    <span>· LOG EVERY · INTERPRET EVERY · OPTIMIZE EVERY ·</span>
+    <span>· GRIDWISE · FIELD CONSOLE v5 ·</span>
+    <span>· BUP CSE FEST 2026 · ON-DUTY OPERATOR ·</span>
+    <span>· TARIFF SLAB: WEEKDAY PEAK · OFF-PEAK 23:00–17:00 · PEAK 17:00–23:00 ·</span>
+    <span>· CTRL+ENTER · TRANSMIT · CTRL+K · JUMP TO NOTES · ESC · CLEAR ·</span>
+    <span>· LOG EVERY · INTERPRET EVERY · OPTIMIZE EVERY ·</span>
+  </div>
+</div>
 <main class="layout">
 <section class="paper">
   <div class="head">
@@ -608,14 +674,17 @@ tr.peak .row-mark{color:var(--mag)}
         <button class="card" type="button" data-preset="SAMPLE-01" data-badge-text="CLEAN" data-badge-kind="phos">
           <div class="badge phos" id="bd-01">CLEAN</div>
           <div class="pn">P/01</div><div class="nm">Cleaning</div><div class="ds">panels 12–14h · solar −75%</div>
+          <div class="prev">SOLAR CUT + NO CHARGE WINDOW</div>
         </button>
         <button class="card" type="button" data-preset="SAMPLE-03" data-badge-text="RESERVE" data-badge-kind="cyan">
           <div class="badge cyan" id="bd-03">RESERVE</div>
           <div class="pn">P/02</div><div class="nm">Reserve</div><div class="ds">50% batt 18–21h · cap floor</div>
+          <div class="prev">MIN RESERVE + PEAK WINDOW</div>
         </button>
         <button class="card" type="button" data-preset="SAMPLE-05" data-badge-text="CAP" data-badge-kind="mag">
           <div class="badge mag" id="bd-05">CAP</div>
           <div class="pn">P/03</div><div class="nm">Cap</div><div class="ds">grid ≤155 kWh 18–21h</div>
+          <div class="prev">MAX GRID CAP · 3H WINDOW</div>
         </button>
       </div>
       <div class="quick-row" id="quick-notes">
@@ -670,6 +739,17 @@ tr.peak .row-mark{color:var(--mag)}
       <div class="mark">⌐<span class="x">□</span>⌐</div>
       <h3>— no schedule on file —</h3>
       <div class="cue">SELECT A PRESET &nbsp;·&nbsp; PRESS TRANSMIT</div>
+      <ol class="howto">
+        <li><b>① PICK A PRESET.</b> One of three attached scenarios. Hover to peek the directive shape.</li>
+        <li><b>② EDIT NOTES.</b> 1–3 lines of plain English. <em>Ctrl+K</em> to jump focus.</li>
+        <li><b>③ TRANSMIT.</b> <em>Ctrl+Enter</em> fires the request. The 24-hour plan lands on the right.</li>
+      </ol>
+      <div class="hint-stack">
+        <span class="hint-pill"><i class="dot phos"></i>phos · solar-led</span>
+        <span class="hint-pill"><i class="dot cyan"></i>cyan · batt action</span>
+        <span class="hint-pill"><i class="dot amber"></i>amber · cost unit</span>
+        <span class="hint-pill"><i class="dot mag"></i>mag · peak / cap</span>
+      </div>
     </div>
     <div id="results" class="results">
       <div class="board">
@@ -759,6 +839,10 @@ tr.peak .row-mark{color:var(--mag)}
         </svg>
       </div>
       <div class="chart-block">
+        <div class="tariff-bands" aria-hidden="true">
+          <span class="tb off">OFF</span><span class="tb peak">PEAK</span><span class="tb off">OFF</span><span class="tb peak">PEAK</span><span class="tb off">OFF</span>
+          <b class="tb-axis">TARIFF WINDOWS · 17–23 = PEAK</b>
+        </div>
         <div class="chart-head">
           <div class="lbl">FIG.1 — 24-hour dispatch<span class="sub" id="chart-sub"></span></div>
           <div class="seg" id="seg">
@@ -790,6 +874,18 @@ tr.peak .row-mark{color:var(--mag)}
             <tbody id="plan-rows"></tbody>
           </table>
         </div>
+      </div>
+      <div class="hist-row">
+        <div class="hr-head"><span>· RUN HISTORY</span><span class="meta" id="hist-meta">NO TRANSMISSIONS YET</span></div>
+        <div class="hr-strip" id="hr-strip"><div class="hr-empty">// history clears on page refresh&hellip;</div></div>
+      </div>
+      <div class="sys-row">
+        <div class="sys-cell"><span class="sl">SYSTEM</span><span class="sv" id="sys-version">v6.0.0</span></div>
+        <div class="sys-cell"><span class="sl">UPTIME</span><span class="sv" id="sys-up">00:00:00</span></div>
+        <div class="sys-cell"><span class="sl">LAST&nbsp;PAYLOAD</span><span class="sv" id="sys-payload">—</span></div>
+        <div class="sys-cell"><span class="sl">LAST&nbsp;RESPONSE</span><span class="sv" id="sys-resp">—</span></div>
+        <div class="sys-cell"><span class="sl">CACHE</span><span class="sv" id="sys-cache">—</span></div>
+        <div class="sys-cell"><span class="sl">THEME</span><span class="sv">PAPER&nbsp;·&nbsp;MONO</span></div>
       </div>
     </div>
   </div>
@@ -847,6 +943,9 @@ const el = {
   mmCells:$('mm-cells'),
   kCostTip:$('k-cost-tip'), kGridTip:$('k-grid-tip'),
   kPeakTip:$('k-peak-tip'), kDirsTip:$('k-dirs-tip'),
+  hrStrip:$('hr-strip'), hrMeta:$('hist-meta'),
+  sysUp:$('sys-up'), sysPayload:$('sys-payload'), sysResp:$('sys-resp'),
+  sysCache:$('sys-cache'),
 };
 let chart = null, last = null, stackMode = 'stacked', runCount = 0;
 const safe = (n, d=0) => Number.isFinite(n) ? n : d;
@@ -919,6 +1018,7 @@ function buildPayload(){
   const v = validateJSON();
   if (!v.ok || !v.value) throw new Error(v.error || 'PAYLOAD INVALID');
   const notes = el.notes.value.split('\n').map(s => s.trim()).filter(Boolean);
+  window.__lastNotes = notes.join(' | ');
   return {
     scenario_id: v.value.scenario_id || 'OPS-SCEN',
     operator_notes: notes.length ? notes : ['RUN DAY NORMALLY'],
@@ -1182,6 +1282,57 @@ function tickBuildHash(){
   const stamp = new Date().toISOString().slice(11,19).replace(/:/g,'');
   tag.textContent = `BUILD ${stamp}-${glitch}`;
 }
+const __history = [];
+const __startTs = Date.now();
+function tickSysUptime(){
+  if (!el.sysUp) return;
+  const s = Math.floor((Date.now() - __startTs) / 1000);
+  const h = String(Math.floor(s/3600)).padStart(2,'0');
+  const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
+  const ss = String(s%60).padStart(2,'0');
+  el.sysUp.textContent = `${h}:${m}:${ss}`;
+}
+function pushRunHistory(entry){
+  __history.unshift(entry);
+  if (__history.length > 24) __history.pop();
+  if (!el.hrStrip) return;
+  if (__history.length === 1){
+    el.hrStrip.innerHTML = '';
+  }
+  el.hrMeta.textContent = `${__history.length} TRANSMISSION${__history.length===1?'':'S'}`;
+  const tick = document.createElement('button');
+  tick.type = 'button';
+  tick.className = 'hr-tick ' + entry.kind;
+  const tagText = entry.kind === 'ok' ? 'OK' : entry.kind === 'warn' ? 'WRN' : 'ERR';
+  tick.innerHTML = `
+    <div class="ht-tag">${tagText}</div>
+    <div class="ht-top"><span>${esc(entry.scenario)}</span><span>#${pad3(entry.idx)}</span></div>
+    <div class="ht-mid">${entry.cost.toFixed(0)} BDT</div>
+    <div class="ht-bot">${entry.grid.toFixed(0)} kWh · ${entry.ms} ms</div>
+  `;
+  tick.title = entry.ts;
+  tick.addEventListener('click', () => {
+    if (last){
+      el.scrub.value = '0';
+      updateScrub(0);
+      setBanner(`// REPLAYED #${pad3(entry.idx)} (${esc(entry.scenario)})`, 'info');
+    }
+  });
+  el.hrStrip.insertBefore(tick, el.hrStrip.firstChild);
+}
+function updateSysRow(body, ms){
+  if (el.sysPayload){
+    const notes = (window.__lastNotes || '').slice(0, 60);
+    el.sysPayload.textContent = notes ? notes : '—';
+  }
+  if (el.sysResp){
+    el.sysResp.textContent = body ? `${fmt(body.total_cost_bdt,2)} BDT · ${fmt(body.total_grid_kwh,1)} kWh` : '—';
+  }
+  if (el.sysCache){
+    const k = __history.length;
+    el.sysCache.textContent = k === 0 ? 'COLD' : `WARM · ${k}/24`;
+  }
+}
 function renderPlan(body){
   const plan = Array.isArray(body.hourly_plan) ? body.hourly_plan : [];
   el.planRows.innerHTML = '';
@@ -1343,10 +1494,30 @@ async function optimize(){
     el.results.classList.add('show');
     el.scrub.value = '0';
     updateScrub(0);
+    pushRunHistory({
+      idx: runCount,
+      ts: new Date().toLocaleTimeString('en-GB'),
+      scenario: body.scenario_id || 'OPS',
+      cost: safe(body.total_cost_bdt, 0),
+      grid: safe(body.total_grid_kwh, 0),
+      ms: Math.round(ms),
+      kind: 'ok',
+    });
+    updateSysRow(body, ms);
     setBanner(`TRANSMIT OK - <b>${fmt(body.total_cost_bdt,2)} BDT</b> - GRID <b>${fmt(body.total_grid_kwh,1)} kWh</b> - <b>${Math.round(ms)}ms</b>`, 'ok');
     el.footState.textContent = 'OPTIMIZED - READY';
   } catch (e) {
     const isAbort = e && e.name === 'AbortError';
+    pushRunHistory({
+      idx: runCount,
+      ts: new Date().toLocaleTimeString('en-GB'),
+      scenario: 'ERR',
+      cost: 0,
+      grid: 0,
+      ms: 0,
+      kind: isAbort ? 'warn' : 'err',
+    });
+    updateSysRow(null, 0);
     setBanner(`<b>${isAbort ? 'TIMEOUT' : 'TRANSMIT FAILED'}</b> - ${esc(e.message || String(e))}`, 'err');
     el.footState.textContent = 'FAILED';
   } finally {
@@ -1425,6 +1596,9 @@ function wire(){
   setInterval(pingHealth, 20000);
   tickBuildHash();
   setInterval(tickBuildHash, 2000);
+  tickSysUptime();
+  setInterval(tickSysUptime, 1000);
+  updateSysRow(null, 0);
 }
 document.addEventListener('DOMContentLoaded', wire);
 })();
