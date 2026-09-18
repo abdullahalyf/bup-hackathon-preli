@@ -18,22 +18,22 @@
     --text:#E8EDF6;
     --text-dim:#8895AE;
     --text-faint:#5C6880;
-
-    --solar:#F2B347;
+ 
+    --solar:#da9b3e;
     --battery:#3FD9C0;
     --grid:#FF6584;
     --charge:#2C7F75;
     --soc:#9C8CFF;
     --ok:#4ADE80;
     --bad:#FF6584;
-
+ 
     --sans:"Space Grotesk", "Segoe UI", system-ui, -apple-system, sans-serif;
     --mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-
+ 
     --r:14px;
     --r-sm:8px;
   }
-
+ 
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{
@@ -51,9 +51,9 @@
   a{color:var(--battery)}
   ::selection{background:rgba(63,217,192,.28)}
   :focus-visible{outline:2px solid var(--battery); outline-offset:2px; border-radius:4px}
-
+ 
   .wrap{max-width:1360px;margin:0 auto;padding:22px 22px 60px}
-
+ 
   /* ---------- top bar ---------- */
   .topbar{
     display:flex;align-items:center;gap:18px;flex-wrap:wrap;
@@ -65,7 +65,7 @@
     font-size:19px;font-weight:600;margin:0;letter-spacing:-.01em;
   }
   .brand p{margin:0;font-size:12.5px;color:var(--text-faint)}
-
+ 
   .endpoint{display:flex;align-items:center;gap:8px}
   .endpoint label{font-size:12.5px;color:var(--text-dim)}
   .endpoint input{
@@ -76,11 +76,11 @@
   .dot.live{background:var(--ok);box-shadow:0 0 0 4px rgba(74,222,128,.14)}
   .dot.down{background:var(--bad);box-shadow:0 0 0 4px rgba(255,101,132,.14)}
   .health{font-size:12px;color:var(--text-dim);font-family:var(--mono);min-width:92px}
-
+ 
   /* ---------- layout ---------- */
   .cols{display:grid;grid-template-columns:352px minmax(0,1fr);gap:22px;align-items:start}
   @media (max-width:1040px){ .cols{grid-template-columns:1fr} }
-
+ 
   .panel{
     background:linear-gradient(180deg,var(--ink-800),var(--ink-900));
     border:1px solid var(--line);border-radius:var(--r);
@@ -92,7 +92,7 @@
   .panel-head h2{margin:0;font-size:14.5px;font-weight:600;letter-spacing:-.005em}
   .panel-head .note{margin-left:auto;font-size:12px;color:var(--text-faint);font-family:var(--mono)}
   .panel-body{padding:14px 18px 18px}
-
+ 
   /* ---------- controls ---------- */
   .steps{counter-reset:step}
   .step{padding:16px 18px;border-bottom:1px solid var(--line)}
@@ -106,7 +106,7 @@
     font-family:var(--mono);font-size:10.5px;color:var(--ink-900);background:var(--text-dim);
     width:17px;height:17px;border-radius:5px;display:grid;place-items:center;flex:none;
   }
-
+ 
   .chips{display:flex;gap:7px;flex-wrap:wrap}
   .chip{
     background:var(--ink-700);border:1px solid var(--line);color:var(--text);
@@ -116,7 +116,7 @@
   .chip:hover{border-color:var(--battery)}
   .chip[aria-pressed="true"]{background:rgba(63,217,192,.14);border-color:var(--battery);color:#BDF6EC}
   .chip small{color:var(--text-faint);font-family:var(--mono);font-size:11px;margin-left:5px}
-
+ 
   textarea{
     width:100%;background:var(--ink-900);color:var(--text);border:1px solid var(--line);
     border-radius:var(--r-sm);padding:11px 12px;font-family:var(--mono);font-size:12.5px;
@@ -125,7 +125,7 @@
   textarea:focus{border-color:var(--battery);outline:none}
   #notes{min-height:104px}
   #hours-json{min-height:180px;font-size:11.5px;line-height:1.5}
-
+ 
   .meta-row{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:11.5px;font-family:var(--mono);color:var(--text-faint)}
   .meta-row .bad{color:var(--bad)}
   .meta-row .ok{color:var(--ok)}
@@ -134,14 +134,14 @@
     font-size:11.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:0;
   }
   .meta-row button:hover{color:var(--battery)}
-
+ 
   .snips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
   .snip{
     background:transparent;border:1px dashed var(--line);color:var(--text-dim);
     padding:5px 9px;border-radius:6px;font:inherit;font-size:11.5px;cursor:pointer;
   }
   .snip:hover{border-color:var(--battery);color:var(--text);border-style:solid}
-
+ 
   .run{padding:16px 18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .btn{
     font:inherit;font-size:14px;font-weight:500;border-radius:var(--r-sm);cursor:pointer;
@@ -153,7 +153,7 @@
   .btn-ghost{background:var(--ink-700);border-color:var(--line);color:var(--text)}
   .btn-ghost:hover{border-color:var(--text-dim)}
   .kbd{font-family:var(--mono);font-size:10.5px;color:var(--text-faint);margin-left:auto}
-
+ 
   /* ---------- banner ---------- */
   .banner{
     display:none;margin-bottom:18px;padding:13px 16px;border-radius:var(--r-sm);
@@ -163,7 +163,7 @@
   .banner.show{display:block}
   .banner b{color:#fff;font-weight:600}
   .banner code{font-family:var(--mono);font-size:12px}
-
+ 
   /* ---------- hero readout ---------- */
   .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border-radius:var(--r);overflow:hidden;border:1px solid var(--line)}
   @media (max-width:760px){ .stats{grid-template-columns:repeat(2,minmax(0,1fr))} }
@@ -174,17 +174,17 @@
   .stat .sub{font-size:11.5px;color:var(--text-faint);font-family:var(--mono);margin-top:4px}
   .stat.saving .v{color:var(--ok)}
   .stat.saving.negative .v{color:var(--grid)}
-
+ 
   /* ---------- chart ---------- */
   .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text-dim);margin-left:auto}
   .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:baseline}
-
+ 
   .band-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text-faint);font-family:var(--mono);margin:0 0 5px}
   svg.viz{display:block;width:100%;height:auto;overflow:visible}
   svg.viz .hit{fill:transparent;cursor:crosshair}
   svg.viz .hit:hover{fill:rgba(255,255,255,.035)}
   svg.viz text{font-family:var(--mono);fill:var(--text-faint)}
-
+ 
   .readout{
     display:flex;gap:0;flex-wrap:wrap;margin-top:12px;border:1px solid var(--line);
     border-radius:var(--r-sm);overflow:hidden;background:var(--ink-900);
@@ -193,7 +193,7 @@
   .readout div:last-child{border-right:0}
   .readout .rk{font-size:10.5px;color:var(--text-faint)}
   .readout .rv{font-family:var(--mono);font-size:14px;margin-top:2px}
-
+ 
   /* ---------- directives ---------- */
   .dirs{display:grid;gap:11px}
   .dir{
@@ -211,7 +211,7 @@
   .dir .dquote{font-size:13px;color:var(--text-dim);font-style:italic;margin:0 0 7px}
   .dir .dadj{font-family:var(--mono);font-size:12px;color:var(--text);background:var(--ink-900);border:1px solid var(--line);border-radius:6px;padding:7px 9px;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
   .dir .dexp{font-size:12.5px;color:var(--text-dim);margin:7px 0 0}
-
+ 
   /* ---------- table ---------- */
   .tablewrap{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:var(--r-sm)}
   table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px}
@@ -227,30 +227,30 @@
   .act-discharge{color:var(--solar)}
   .act-idle{color:var(--text-faint)}
   .bar{display:inline-block;height:3px;background:var(--grid);border-radius:2px;vertical-align:middle;margin-left:7px;opacity:.7}
-
+ 
   .empty{
     padding:34px 18px;text-align:center;color:var(--text-dim);font-size:13.5px;
     border:1px dashed var(--line);border-radius:var(--r-sm);
   }
   .empty b{display:block;color:var(--text);font-size:15px;font-weight:500;margin-bottom:5px}
-
+ 
   .summary{
     font-size:13.5px;line-height:1.6;color:var(--text);background:var(--ink-900);
     border:1px solid var(--line);border-left:3px solid var(--solar);
     border-radius:var(--r-sm);padding:12px 15px;margin-bottom:16px;
   }
-
+ 
   footer{margin-top:28px;font-size:12px;color:var(--text-faint);text-align:center}
   footer code{font-family:var(--mono)}
-
+ 
   .hidden{display:none !important}
-
+ 
   @media (prefers-reduced-motion:reduce){ *{transition:none !important; animation:none !important} }
 </style>
 </head>
 <body>
 <div class="wrap">
-
+ 
   <header class="topbar">
     <div class="brand">
       <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
@@ -270,15 +270,15 @@
       <span class="health" id="health">not checked</span>
     </div>
   </header>
-
+ 
   <div id="banner" class="banner" role="alert"></div>
-
+ 
   <div class="cols">
-
+ 
     <!-- ====== CONTROLS ====== -->
     <section class="panel">
       <div class="steps">
-
+ 
         <div class="step">
           <h3>Load a scenario</h3>
           <div class="chips" id="samples">
@@ -287,7 +287,7 @@
             <button class="chip" type="button" data-sample="SAMPLE-05" aria-pressed="false">Feeder cap <small>05</small></button>
           </div>
         </div>
-
+ 
         <div class="step">
           <h3>Write the operator notes</h3>
           <div class="snips">
@@ -303,7 +303,7 @@
             <button type="button" id="clear-notes">Clear</button>
           </div>
         </div>
-
+ 
         <div class="step">
           <h3>Check the day's data</h3>
           <textarea id="hours-json" spellcheck="false" aria-label="Hours and battery JSON"></textarea>
@@ -312,7 +312,7 @@
             <button type="button" id="reformat">Reformat</button>
           </div>
         </div>
-
+ 
         <div class="run">
           <button class="btn btn-primary" type="button" id="optimize">Optimize</button>
           <button class="btn btn-ghost" type="button" id="preview">Preview without battery</button>
@@ -320,7 +320,7 @@
         </div>
       </div>
     </section>
-
+ 
     <!-- ====== RESULTS ====== -->
     <div>
       <div class="stats" id="stats">
@@ -329,7 +329,7 @@
         <div class="stat"><div class="k">Worst import hour</div><div class="v" id="s-peak">—</div><div class="sub" id="s-peak-sub">&nbsp;</div></div>
         <div class="stat saving"><div class="k">Saved by the battery</div><div class="v" id="s-save">—</div><div class="sub" id="s-save-sub">vs solar-only day</div></div>
       </div>
-
+ 
       <section class="panel">
         <div class="panel-head">
           <h2>The day, hour by hour</h2>
@@ -354,7 +354,7 @@
           </div>
         </div>
       </section>
-
+ 
       <section class="panel">
         <div class="panel-head">
           <h2>What the notes were understood to mean</h2>
@@ -366,7 +366,7 @@
           <div id="dirs-empty" class="empty">Each note is read once, turned into a machine-checkable rule, and shown here with the exact numbers that went to the solver.</div>
         </div>
       </section>
-
+ 
       <section class="panel">
         <div class="panel-head">
           <h2>Hourly plan</h2>
@@ -387,14 +387,14 @@
       </section>
     </div>
   </div>
-
+ 
   <footer>POST <code>/optimize-energy</code> — GridWise, BUP CSE Fest 2026</footer>
 </div>
-
+ 
 <script>
 "use strict";
 (function () {
-
+ 
 /* ------------------------------------------------------------------ *
  * Sample scenarios (identical payloads to data/public_samples.json)
  * ------------------------------------------------------------------ */
@@ -406,9 +406,9 @@ var BASE_HOURS = [
 ].map(function (r) {
   return { hour: r[0], demand_kwh: r[1], solar_kwh: r[2], tariff_bdt_per_kwh: r[3] };
 });
-
+ 
 function hoursCopy() { return BASE_HOURS.map(function (h) { return Object.assign({}, h); }); }
-
+ 
 var SAMPLES = {
   "SAMPLE-01": {
     scenario_id: "SAMPLE-01",
@@ -432,12 +432,12 @@ var SAMPLES = {
     battery: { capacity_kwh: 240, initial_energy_kwh: 120, minimum_energy_kwh: 30, max_charge_kwh_per_hour: 60, max_discharge_kwh_per_hour: 60 }
   }
 };
-
+ 
 /* ------------------------------------------------------------------ *
  * Small helpers — every one of these tolerates junk input on purpose.
  * ------------------------------------------------------------------ */
 function $(id) { return document.getElementById(id); }
-
+ 
 function num(v) {
   if (typeof v === "number" && isFinite(v)) return v;
   if (typeof v === "string" && v.trim() !== "") {
@@ -469,7 +469,7 @@ function store(key, val) {
   try { if (val === undefined) return localStorage.getItem(key); localStorage.setItem(key, val); }
   catch (e) { return null; }
 }
-
+ 
 /* ------------------------------------------------------------------ *
  * State
  * ------------------------------------------------------------------ */
@@ -481,7 +481,7 @@ var state = {
   hover: -1,
   mode: "solver"     // "solver" | "preview"
 };
-
+ 
 /* ------------------------------------------------------------------ *
  * Endpoint handling
  * ------------------------------------------------------------------ */
@@ -499,19 +499,19 @@ function healthUrl() {
   var e = endpoint();
   return e.replace(/\/optimize-energy\/?$/, "") + "/health";
 }
-
+ 
 function checkHealth() {
   var dot = $("dot"), label = $("health");
   dot.className = "dot";
   label.textContent = "checking…";
   var url;
   try { url = healthUrl(); } catch (e) { label.textContent = "bad URL"; return; }
-
+ 
   var done = false;
   var timer = setTimeout(function () {
     if (!done) { done = true; dot.className = "dot down"; label.textContent = "no answer"; }
   }, 4000);
-
+ 
   fetch(url, { method: "GET" }).then(function (r) {
     if (done) return; done = true; clearTimeout(timer);
     if (r.ok) { dot.className = "dot live"; label.textContent = "API up"; }
@@ -521,7 +521,7 @@ function checkHealth() {
     dot.className = "dot down"; label.textContent = "unreachable";
   });
 }
-
+ 
 /* ------------------------------------------------------------------ *
  * Banner
  * ------------------------------------------------------------------ */
@@ -537,7 +537,7 @@ function showBanner(title, detail) {
   b.classList.add("show");
 }
 function hideBanner() { $("banner").classList.remove("show"); }
-
+ 
 /* ------------------------------------------------------------------ *
  * Inputs
  * ------------------------------------------------------------------ */
@@ -554,7 +554,7 @@ function loadSample(id) {
   updateNotesCount();
   validateJson();
 }
-
+ 
 function updateNotesCount() {
   var lines = noteLines();
   var elc = $("notes-count");
@@ -564,7 +564,7 @@ function updateNotesCount() {
 function noteLines() {
   return ($("notes").value || "").split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
 }
-
+ 
 function validateJson() {
   var st = $("json-state");
   var raw = ($("hours-json").value || "").trim();
@@ -578,7 +578,7 @@ function validateJson() {
   st.textContent = "24 hours, battery ok"; st.className = "ok";
   return parsed;
 }
-
+ 
 function buildPayload() {
   var base = validateJson();
   if (!base) throw new Error("Fix the scenario JSON on the left first.");
@@ -591,7 +591,7 @@ function buildPayload() {
     battery: base.battery
   };
 }
-
+ 
 /* ------------------------------------------------------------------ *
  * Normalising the response so rendering can never explode
  * ------------------------------------------------------------------ */
@@ -605,7 +605,7 @@ function hourIndexFrom(payload) {
   }
   return map;
 }
-
+ 
 function normaliseRows(result, payload) {
   var src = hourIndexFrom(payload);
   var plan = (result && Array.isArray(result.hourly_plan)) ? result.hourly_plan : [];
@@ -615,24 +615,24 @@ function normaliseRows(result, payload) {
     if (hour === null) hour = i;
     hour = Math.round(hour);
     var ref = src[hour] || {};
-
+ 
     var action = typeof r.battery_action === "string" ? r.battery_action.toLowerCase() : "idle";
     var mag = Math.abs(n0(r.battery_kwh));
     var charge = action === "charge" ? mag : 0;
     var discharge = action === "discharge" ? mag : 0;
     if (action !== "charge" && action !== "discharge") action = "idle";
-
+ 
     var tariff = num(r.tariff_bdt_per_kwh);
     if (tariff === null) tariff = num(ref.tariff_bdt_per_kwh);
     if (tariff === null) tariff = 0;
-
+ 
     var demand = num(r.demand_kwh);
     if (demand === null) demand = num(ref.demand_kwh);
     if (demand === null) demand = 0;
-
+ 
     var grid = n0(r.grid_kwh);
     var solarUsed = n0(r.solar_used_kwh);
-
+ 
     return {
       hour: hour,
       demand: demand,
@@ -648,7 +648,7 @@ function normaliseRows(result, payload) {
     };
   }).sort(function (a, b) { return a.hour - b.hour; });
 }
-
+ 
 /* Solar-only baseline: no battery at all, every hour buys its shortfall. */
 function baselineCost(payload) {
   if (!payload || !Array.isArray(payload.hours)) return null;
@@ -659,36 +659,36 @@ function baselineCost(payload) {
   });
   return total;
 }
-
+ 
 /* ------------------------------------------------------------------ *
  * Stats
  * ------------------------------------------------------------------ */
 function renderStats(result, rows) {
   var cost = num(result && result.total_cost_bdt);
   if (cost === null) cost = rows.reduce(function (a, r) { return a + r.cost; }, 0);
-
+ 
   var gridTotal = num(result && result.total_grid_kwh);
   if (gridTotal === null) gridTotal = rows.reduce(function (a, r) { return a + r.grid; }, 0);
-
+ 
   var peakVal = num(result && result.peak_grid_kwh);
   var peakRow = null;
   rows.forEach(function (r) { if (!peakRow || r.grid > peakRow.grid) peakRow = r; });
   if (peakVal === null) peakVal = peakRow ? peakRow.grid : 0;
-
+ 
   $("s-cost").innerHTML = "";
   $("s-cost").appendChild(document.createTextNode(money(cost)));
   $("s-cost").appendChild(el("small", null, "BDT"));
   $("s-cost-sub").textContent = state.mode === "preview" ? "battery idle preview" : "solver optimum";
-
+ 
   $("s-grid").innerHTML = "";
   $("s-grid").appendChild(document.createTextNode(fmt(gridTotal, 0)));
   $("s-grid").appendChild(el("small", null, "kWh"));
   var solarSum = rows.reduce(function (a, r) { return a + r.solarUsed; }, 0);
   $("s-grid-sub").textContent = fmt(solarSum, 0) + " kWh came from solar";
-
+ 
   $("s-peak").textContent = peakRow ? hh(peakRow.hour) : "—";
   $("s-peak-sub").textContent = fmt(peakVal, 1) + " kWh imported";
-
+ 
   var base = state.baseline;
   var box = $("s-save");
   var sub = $("s-save-sub");
@@ -706,14 +706,14 @@ function renderStats(result, rows) {
     card.classList.toggle("negative", diff < 0);
   }
 }
-
+ 
 /* ------------------------------------------------------------------ *
  * Tariff band + main chart (hand-drawn SVG, no chart library)
  * ------------------------------------------------------------------ */
 var X0 = 44, X1 = 916, TOP = 16, PH = 250;
 var PW = X1 - X0;
 var CW = PW / 24;
-
+ 
 function niceCeil(v) {
   if (!(v > 0)) return 0;
   var mag = Math.pow(10, Math.floor(Math.log10(v)));
@@ -741,14 +741,14 @@ function tariffColor(t, lo, hi) {
   }
   return "rgb(" + r + "," + g + "," + b + ")";
 }
-
+ 
 function renderTariffBand(rows) {
   var svg = $("tariff-svg");
   if (!rows.length) { svg.innerHTML = ""; return; }
   var lo = Infinity, hi = -Infinity;
   rows.forEach(function (r) { if (r.tariff < lo) lo = r.tariff; if (r.tariff > hi) hi = r.tariff; });
   if (!isFinite(lo)) { lo = 0; hi = 0; }
-
+ 
   var parts = [];
   rows.forEach(function (r, i) {
     var x = X0 + i * CW;
@@ -758,11 +758,11 @@ function renderTariffBand(rows) {
   svg.innerHTML = parts.join("");
   $("tariff-range").textContent = fmt(lo, 0) + " – " + fmt(hi, 0) + " BDT/kWh";
 }
-
+ 
 function renderChart(rows, battery) {
   var svg = $("chart");
   if (!rows.length) { svg.innerHTML = ""; return; }
-
+ 
   var maxUp = 0, maxDown = 0;
   rows.forEach(function (r) {
     var stack = r.solarUsed + r.discharge + r.grid;
@@ -776,16 +776,16 @@ function renderChart(rows, battery) {
   var scale = PH / span;
   function y(v) { return TOP + (top - v) * scale; }
   var zero = y(0);
-
+ 
   var cap = num(battery && battery.capacity_kwh);
   if (cap === null || cap <= 0) {
     cap = rows.reduce(function (a, r) { return Math.max(a, r.soc); }, 0) * 1.15 || 1;
   }
   var minRes = num(battery && battery.minimum_energy_kwh);
   function ySoc(e) { return TOP + (1 - clamp(e / cap, 0, 1)) * PH; }
-
+ 
   var p = [];
-
+ 
   // horizontal guides + left axis
   var ticks = [0, top / 2, top];
   if (bot > 0) ticks.push(-bot);
@@ -797,19 +797,19 @@ function renderChart(rows, battery) {
       Math.round(Math.abs(t)) + '</text>');
   });
   p.push('<text x="' + (X0 - 8) + '" y="' + (TOP - 5) + '" font-size="9.5" text-anchor="end" fill="#5C6880">kWh</text>');
-
+ 
   // right axis (stored energy)
   p.push('<text x="' + (X1 + 8) + '" y="' + (TOP + 4) + '" font-size="10">' + Math.round(cap) + '</text>');
   p.push('<text x="' + (X1 + 8) + '" y="' + (TOP + PH + 4) + '" font-size="10">0</text>');
   p.push('<text x="' + (X1 + 8) + '" y="' + (TOP - 5) + '" font-size="9.5" fill="#9C8CFF">stored</text>');
-
+ 
   // reserve floor
   if (minRes !== null && minRes > 0 && minRes < cap) {
     var yr = ySoc(minRes);
     p.push('<line x1="' + X0 + '" y1="' + yr.toFixed(2) + '" x2="' + X1 + '" y2="' + yr.toFixed(2) +
       '" stroke="#9C8CFF" stroke-width="1" stroke-dasharray="2 5" opacity="0.4"></line>');
   }
-
+ 
   // bars
   var bw = Math.min(23, CW * 0.6);
   rows.forEach(function (r, i) {
@@ -835,7 +835,7 @@ function renderChart(rows, battery) {
         '" height="' + hc.toFixed(2) + '" fill="var(--charge)" opacity="0.9"></rect>');
     }
   });
-
+ 
   // demand as a stepped outline
   var dem = [];
   rows.forEach(function (r, i) {
@@ -844,7 +844,7 @@ function renderChart(rows, battery) {
     dem.push("L" + xb.toFixed(2) + " " + yy);
   });
   p.push('<path d="' + dem.join(" ") + '" fill="none" stroke="#E8EDF6" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.5"></path>');
-
+ 
   // stored energy line
   var soc = rows.map(function (r, i) {
     return (X0 + i * CW + CW / 2).toFixed(2) + "," + ySoc(r.soc).toFixed(2);
@@ -854,7 +854,7 @@ function renderChart(rows, battery) {
     p.push('<circle cx="' + (X0 + i * CW + CW / 2).toFixed(2) + '" cy="' + ySoc(r.soc).toFixed(2) +
       '" r="1.9" fill="#9C8CFF"></circle>');
   });
-
+ 
   // hover guide + hit areas
   p.push('<line id="guide" x1="0" y1="' + TOP + '" x2="0" y2="' + (TOP + PH) +
     '" stroke="#E8EDF6" stroke-width="1" opacity="0"></line>');
@@ -862,7 +862,7 @@ function renderChart(rows, battery) {
     p.push('<rect class="hit" data-i="' + i + '" x="' + (X0 + i * CW).toFixed(2) + '" y="' + TOP +
       '" width="' + CW.toFixed(2) + '" height="' + PH + '"></rect>');
   });
-
+ 
   // hour axis
   rows.forEach(function (r, i) {
     if (i % 2 !== 0) return;
@@ -870,15 +870,15 @@ function renderChart(rows, battery) {
       '" font-size="9.5" text-anchor="middle">' + svgEsc(String(r.hour).padStart(2, "0")) + '</text>');
   });
   p.push('<text x="' + X0 + '" y="' + (TOP + PH + 36) + '" font-size="9.5" fill="#5C6880">hour of day</text>');
-
+ 
   svg.innerHTML = p.join("");
-
+ 
   Array.prototype.forEach.call(svg.querySelectorAll(".hit"), function (h) {
     h.addEventListener("mouseenter", function () { setHover(parseInt(h.getAttribute("data-i"), 10)); });
   });
   svg.addEventListener("mouseleave", function () { setHover(-1); });
 }
-
+ 
 /* ------------------------------------------------------------------ *
  * Readout under the chart
  * ------------------------------------------------------------------ */
@@ -903,7 +903,7 @@ function readoutFields(r) {
     ["stored after", fmt(r.soc, 1) + " kWh"]
   ];
 }
-
+ 
 function renderReadout(r) {
   var box = $("readout");
   box.innerHTML = "";
@@ -914,12 +914,12 @@ function renderReadout(r) {
     box.appendChild(d);
   });
 }
-
+ 
 function setHover(i) {
   state.hover = i;
   var r = (i >= 0 && i < state.rows.length) ? state.rows[i] : null;
   renderReadout(r);
-
+ 
   var guide = document.getElementById("guide");
   if (guide) {
     if (r) {
@@ -935,7 +935,7 @@ function setHover(i) {
     tr.classList.toggle("on", idx === i);
   });
 }
-
+ 
 /* ------------------------------------------------------------------ *
  * Directives
  * ------------------------------------------------------------------ */
@@ -962,20 +962,20 @@ function prettyAdjustment(type, adj) {
   if (head) return head;
   try { return JSON.stringify(adj); } catch (e) { return String(adj); }
 }
-
+ 
 function renderDirectives(result, payload) {
   var wrap = $("dirs");
   var empty = $("dirs-empty");
   wrap.innerHTML = "";
-
+ 
   var list = (result && Array.isArray(result.directive_interpretation)) ? result.directive_interpretation : [];
   var notes = (payload && Array.isArray(payload.operator_notes)) ? payload.operator_notes : [];
-
+ 
   var summary = result && typeof result.plan_summary === "string" ? result.plan_summary.trim() : "";
   var sbox = $("sum-box");
   if (summary) { sbox.textContent = summary; sbox.classList.remove("hidden"); }
   else { sbox.classList.add("hidden"); }
-
+ 
   if (!list.length) {
     empty.classList.remove("hidden");
     empty.textContent = "The response carried no directive_interpretation entries.";
@@ -983,38 +983,38 @@ function renderDirectives(result, payload) {
     return;
   }
   empty.classList.add("hidden");
-
+ 
   var active = list.filter(function (d) { return d && d.applies; }).length;
   $("dir-count").textContent = active + " of " + list.length + " applied";
-
+ 
   list.forEach(function (d) {
     d = d || {};
     var on = !!d.applies;
     var card = el("div", "dir " + (on ? "on" : "off"));
-
+ 
     var top = el("div", "dtop");
     top.appendChild(el("span", "dtype", d.directive_type || "unknown"));
     top.appendChild(el("span", "dstate", on ? "applied" : "ignored"));
     var idx = num(d.note_index);
     top.appendChild(el("span", "didx", idx === null ? "" : "note " + idx));
     card.appendChild(top);
-
+ 
     var text = null;
     if (idx !== null) {
       if (notes[idx] !== undefined) text = notes[idx];
       else if (notes[idx - 1] !== undefined) text = notes[idx - 1];
     }
     if (text) card.appendChild(el("p", "dquote", "“" + text + "”"));
-
+ 
     var pretty = prettyAdjustment(d.directive_type, d.structured_adjustment);
     if (pretty) card.appendChild(el("div", "dadj", pretty));
-
+ 
     if (d.explanation) card.appendChild(el("p", "dexp", d.explanation));
-
+ 
     wrap.appendChild(card);
   });
 }
-
+ 
 /* ------------------------------------------------------------------ *
  * Table
  * ------------------------------------------------------------------ */
@@ -1031,36 +1031,36 @@ function renderTable(rows) {
     return;
   }
   var maxGrid = rows.reduce(function (a, r) { return Math.max(a, r.grid); }, 0) || 1;
-
+ 
   rows.forEach(function (r, i) {
     var tr = el("tr");
     if (r.grid >= maxGrid - 1e-9) tr.classList.add("peak");
-
+ 
     tr.appendChild(el("td", null, hh(r.hour)));
     tr.appendChild(el("td", null, fmt(r.demand, 1)));
     tr.appendChild(el("td", null, fmt(r.solarUsed, 1)));
-
+ 
     var b = el("td", "act-" + r.action);
     b.textContent = r.action === "idle" ? "idle"
       : (r.action === "charge" ? "+" : "−") + fmt(Math.abs(r.charge || r.discharge), 1);
     tr.appendChild(b);
-
+ 
     var g = el("td");
     g.appendChild(document.createTextNode(fmt(r.grid, 1)));
     var bar = el("span", "bar");
     bar.setAttribute("style", "width:" + (Math.max(0, r.grid) / maxGrid * 34).toFixed(1) + "px");
     g.appendChild(bar);
     tr.appendChild(g);
-
+ 
     tr.appendChild(el("td", null, fmt(r.tariff, 2)));
     tr.appendChild(el("td", null, fmt(r.cost, 0)));
     tr.appendChild(el("td", null, fmt(r.soc, 1)));
-
+ 
     tr.addEventListener("mouseenter", function () { setHover(i); });
     body.appendChild(tr);
   });
 }
-
+ 
 /* ------------------------------------------------------------------ *
  * Full render
  * ------------------------------------------------------------------ */
@@ -1069,14 +1069,14 @@ function render(result, payload) {
   state.payload = payload;
   state.rows = normaliseRows(result, payload);
   state.baseline = baselineCost(payload);
-
+ 
   if (!state.rows.length) {
     showBanner("The API answered, but hourly_plan was empty or missing.", "check /optimize-energy");
   }
-
+ 
   $("viz-empty").classList.add("hidden");
   $("viz-wrap").classList.remove("hidden");
-
+ 
   renderStats(result, state.rows);
   renderTariffBand(state.rows);
   renderChart(state.rows, payload && payload.battery);
@@ -1084,7 +1084,7 @@ function render(result, payload) {
   renderDirectives(result, payload);
   setHover(-1);
 }
-
+ 
 /* ------------------------------------------------------------------ *
  * Offline preview: solar first, battery untouched. Deterministic, and
  * clearly not the solver — useful when the API isn't running yet.
@@ -1119,7 +1119,7 @@ function previewResult(payload) {
     plan_summary: "Preview only: solar covers what it can, the grid covers the rest, and the battery never moves. Run Optimize against the API for the real schedule."
   };
 }
-
+ 
 /* ------------------------------------------------------------------ *
  * Actions
  * ------------------------------------------------------------------ */
@@ -1129,7 +1129,7 @@ function optimize() {
   var payload;
   try { payload = buildPayload(); }
   catch (e) { showBanner(e.message); return; }
-
+ 
   state.mode = "solver";
   var old = btn.textContent;
   btn.disabled = true;
@@ -1141,9 +1141,9 @@ function optimize() {
     btn.disabled = false;
     btn.textContent = old;
   }
-
+ 
   var t0 = (window.performance && performance.now) ? performance.now() : Date.now();
-
+ 
   fetch(endpoint(), {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -1180,11 +1180,11 @@ function optimize() {
     $("dot").className = "dot down";
     $("health").textContent = "unreachable";
   });
-
+ 
   // Safety net: never leave the button stuck if the promise never settles.
   setTimeout(settle, 20000);
 }
-
+ 
 function preview() {
   hideBanner();
   var payload;
@@ -1193,7 +1193,7 @@ function preview() {
   state.mode = "preview";
   render(previewResult(payload), payload);
 }
-
+ 
 function downloadCsv() {
   if (!state.rows.length) { showBanner("Run a plan before downloading the CSV."); return; }
   var head = ["hour", "demand_kwh", "solar_used_kwh", "battery_action", "battery_kwh", "grid_kwh", "tariff_bdt_per_kwh", "cost_bdt", "battery_energy_after_kwh"];
@@ -1219,7 +1219,7 @@ function downloadCsv() {
     showBanner("This browser blocked the download.", e && e.message ? e.message : "");
   }
 }
-
+ 
 /* ------------------------------------------------------------------ *
  * Wiring
  * ------------------------------------------------------------------ */
@@ -1236,7 +1236,7 @@ Array.prototype.forEach.call(document.querySelectorAll("[data-snip]"), function 
     updateNotesCount();
   });
 });
-
+ 
 $("notes").addEventListener("input", updateNotesCount);
 $("clear-notes").addEventListener("click", function () { $("notes").value = ""; updateNotesCount(); });
 $("hours-json").addEventListener("input", validateJson);
@@ -1250,25 +1250,26 @@ $("reformat").addEventListener("click", function () {
 $("optimize").addEventListener("click", optimize);
 $("preview").addEventListener("click", preview);
 $("csv").addEventListener("click", downloadCsv);
-
+ 
 $("api").value = store("gridwise.api") || defaultEndpoint();
 $("api").addEventListener("change", function () {
   store("gridwise.api", $("api").value.trim());
   checkHealth();
 });
-
+ 
 document.addEventListener("keydown", function (e) {
   if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); optimize(); }
 });
-
+ 
 loadSample("SAMPLE-01");
 renderReadout(null);
 checkHealth();
-
+ 
 // exposed for the smoke test harness only
 window.__gridwise = { render: render, previewResult: previewResult, state: state, buildPayload: buildPayload };
-
+ 
 })();
 </script>
 </body>
 </html>
+ 
