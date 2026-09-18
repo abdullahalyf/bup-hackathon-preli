@@ -28,6 +28,7 @@
     .sub { color: var(--ink-dim); margin-bottom: 24px; font-size: 13px; }
 
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .row > * { min-width: 0; }
     @media (max-width: 960px) { .row { grid-template-columns: 1fr; } }
 
     .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
@@ -49,10 +50,35 @@
     .status.err { color: var(--bad); }
     .status.ok { color: var(--good); }
 
-    .totals { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+    .error-banner {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 1px solid rgba(239, 83, 80, 0.45);
+      background: rgba(239, 83, 80, 0.08);
+      color: var(--bad);
+      border-radius: 6px;
+      font-size: 13px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .error-banner .icon { font-size: 16px; line-height: 1; margin-top: 1px; }
+    .error-banner .msg { flex: 1; }
+    .error-banner .detail { color: var(--ink-dim); font-size: 12px; margin-top: 4px; font-family: var(--mono); word-break: break-word; }
+
+    .spinner {
+      width: 12px; height: 12px; border-radius: 50%;
+      border: 2px solid rgba(0, 39, 51, 0.35);
+      border-top-color: #002733;
+      display: inline-block; vertical-align: -2px;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .totals { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
     .totals .card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
     .totals .label { font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 1px; }
-    .totals .value { font-size: 20px; margin-top: 4px; font-weight: 600; }
+    .totals .value { font-size: 20px; margin-top: 4px; font-weight: 600; word-break: break-word; }
     .totals .unit { font-size: 12px; color: var(--ink-dim); margin-left: 4px; font-weight: 400; }
 
     .summary { margin-top: 14px; padding: 12px 14px; background: #0b0f17; border: 1px dashed var(--border); border-radius: 6px; font-family: var(--mono); font-size: 12.5px; color: var(--ink-dim); }
@@ -68,7 +94,7 @@
     .plan { margin-top: 18px; }
     .plan .scroll { max-height: 360px; overflow: auto; border: 1px solid var(--border); border-radius: 6px; }
     .plan table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
-    .plan th, .plan td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--border); }
+    .plan th, .plan td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
     .plan th { background: var(--panel-2); position: sticky; top: 0; color: var(--ink-dim); font-weight: 500; text-align: right; }
     .plan th:first-child, .plan td:first-child { text-align: left; }
     .action-charge { color: var(--accent); }
@@ -112,6 +138,13 @@
     <section class="panel">
       <h2>Result</h2>
       <div id="empty" class="summary">No run yet. Hit Optimize to see the 24-hour schedule.</div>
+      <div id="error-banner" class="error-banner" style="display:none" role="alert">
+        <span class="icon" aria-hidden="true">⚠</span>
+        <div class="msg">
+          <div id="error-msg">Something went wrong.</div>
+          <div class="detail" id="error-detail"></div>
+        </div>
+      </div>
 
       <div id="totals" class="totals" style="display:none">
         <div class="card"><div class="label">Total cost</div><div class="value" id="t-cost">–</div></div>
@@ -149,7 +182,9 @@
 
   <footer>POST <code class="inline">/optimize-energy</code> · GridWise prototype</footer>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.7/chart.umd.min.js"></script>
+  <script src="chart.umd.min.js"></script>
+  <!-- CDN fallback: only used if the local copy above failed to load (e.g. when serving the directory under a path that strips the file). -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" onerror="window.__chartCdnFailed=true"></script>
   <script>
     // ----- Embedded samples (compact JSON) -----
     const SAMPLES = {
@@ -195,7 +230,28 @@
       el.className = 'status' + (kind ? ' ' + kind : '');
     }
 
-    function render(result) {
+    function showError(message, detail) {
+      const banner = $('error-banner');
+      $('error-msg').textContent = message;
+      $('error-detail').textContent = detail || '';
+      banner.style.display = 'flex';
+    }
+
+    function hideError() {
+      const banner = $('error-banner');
+      banner.style.display = 'none';
+      $('error-detail').textContent = '';
+    }
+
+    function resetResultsPanel() {
+      $('totals').style.display = 'none';
+      $('summary').style.display = 'none';
+      $('directives-wrap').style.display = 'none';
+      $('plan-body').innerHTML = '';
+      if (chart) { chart.destroy(); chart = null; }
+    }
+
+    function render(result, inputHours) {
       $('empty').style.display = 'none';
       $('totals').style.display = 'grid';
       $('summary').style.display = 'block';
@@ -212,51 +268,70 @@
 
       const db = $('directives-body');
       db.innerHTML = '';
+      const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       for (const d of result.directive_interpretation) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${d.note_index}</td>
+          <td>${esc(d.note_index)}</td>
           <td><span class="tag ${d.applies ? 'applies' : 'skip'}">${d.applies ? 'applies' : 'skip'}</span></td>
-          <td>${d.directive_type}</td>
-          <td><code>${d.structured_adjustment ? JSON.stringify(d.structured_adjustment) : 'null'}</code></td>
-          <td>${d.explanation || ''}</td>
+          <td>${esc(d.directive_type)}</td>
+          <td><code>${esc(d.structured_adjustment ? JSON.stringify(d.structured_adjustment) : 'null')}</code></td>
+          <td>${esc(d.explanation || '')}</td>
         `;
         db.appendChild(tr);
       }
 
       const pb = $('plan-body');
       pb.innerHTML = '';
+      const hoursByIdx = {};
+      for (const h of inputHours) hoursByIdx[h.hour] = h;
       for (const row of result.hourly_plan) {
         const tr = document.createElement('tr');
         const actionClass = row.battery_action === 'charge' ? 'action-charge'
           : row.battery_action === 'discharge' ? 'action-discharge' : 'action-idle';
         const sign = row.battery_action === 'discharge' ? '-' : row.battery_action === 'charge' ? '+' : ' ';
-        const cost = row.grid_kwh * (row.tariff_bdt_per_kwh ?? 0);
+        const tariff = hoursByIdx[row.hour]?.tariff_bdt_per_kwh ?? 0;
+        const demand = hoursByIdx[row.hour]?.demand_kwh;
+        const cost = row.grid_kwh * tariff;
         tr.innerHTML = `
           <td>H${String(row.hour).padStart(2,'0')}</td>
-          <td>${row.demand_kwh?.toFixed(1) ?? '–'}</td>
+          <td>${typeof demand === 'number' ? demand.toFixed(1) : '–'}</td>
           <td>${row.solar_used_kwh.toFixed(1)}</td>
-          <td class="${actionClass}">${sign}${Math.abs(row.battery_kwh).toFixed(1)} ${row.battery_action}</td>
+          <td class="${actionClass}">${sign}${Math.abs(row.battery_kwh).toFixed(1)} ${esc(row.battery_action)}</td>
           <td>${row.grid_kwh.toFixed(1)}</td>
-          <td>${(row.tariff_bdt_per_kwh ?? 0).toFixed(2)}</td>
+          <td>${tariff.toFixed(2)}</td>
           <td>${cost.toFixed(2)}</td>
           <td>${row.battery_energy_after_kwh.toFixed(1)}</td>
         `;
         pb.appendChild(tr);
       }
 
-      drawChart(result);
+      drawChart(result, inputHours);
     }
 
     let chart = null;
-    function drawChart(result) {
+
+    function ensureChartLib() {
+      if (typeof Chart !== 'undefined') return true;
+      showError(
+        'Chart.js library failed to load.',
+        'Could not load chart.umd.min.js from the frontend folder or the CDN fallback. Make sure frontend/chart.umd.min.js exists next to index.html, or that you have internet access for the jsDelivr CDN.'
+      );
+      setStatus('chart library missing', 'err');
+      return false;
+    }
+
+    function drawChart(result, inputHours) {
+      if (!ensureChartLib()) return;
       const ctx = $('chart').getContext('2d');
       const labels = result.hourly_plan.map(r => `H${String(r.hour).padStart(2,'0')}`);
-      const demand = result.hourly_plan.map(r => r.demand_kwh ?? 0);
-      const solar = result.hourly_plan.map(r => r.solar_used_kwh);
-      const grid = result.hourly_plan.map(r => r.grid_kwh);
+      const hoursByIdx = {};
+      for (const h of inputHours) hoursByIdx[h.hour] = h;
+      const demand  = result.hourly_plan.map(r => hoursByIdx[r.hour]?.demand_kwh ?? 0);
+      const solar   = result.hourly_plan.map(r => r.solar_used_kwh);
+      const grid    = result.hourly_plan.map(r => r.grid_kwh);
       const battery = result.hourly_plan.map(r => r.battery_energy_after_kwh);
-      const tariff = result.hourly_plan.map(r => r.tariff_bdt_per_kwh ?? 0);
+      const tariff  = result.hourly_plan.map(r => hoursByIdx[r.hour]?.tariff_bdt_per_kwh ?? 0);
 
       if (chart) chart.destroy();
       chart = new Chart(ctx, {
@@ -279,10 +354,10 @@
             tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${Number(c.parsed.y).toFixed(2)}` } }
           },
           scales: {
-            x: { stacked: true, ticks: { color: '#9aa3b2' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y:  { stacked: true, title: { display: true, text: 'kWh', color: '#9aa3b2' }, ticks: { color: '#9aa3b2' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y2: { position: 'right', title: { display: true, text: 'Battery kWh', color: '#66bb6a' }, ticks: { color: '#66bb6a' }, grid: { drawOnChartArea: false } },
-            y3: { position: 'right', title: { display: true, text: 'BDT/kWh', color: '#ef5350' }, ticks: { color: '#ef5350' }, grid: { drawOnChartArea: false }, offset: true },
+            x:  { stacked: true, ticks: { color: '#9aa3b2' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            y:  { stacked: true, beginAtZero: true, title: { display: true, text: 'kWh', color: '#9aa3b2' }, ticks: { color: '#9aa3b2' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+            y2: { position: 'right', offset: false, title: { display: true, text: 'Battery kWh', color: '#66bb6a' }, ticks: { color: '#66bb6a' }, grid: { drawOnChartArea: false } },
+            y3: { position: 'right', offset: true, title: { display: true, text: 'BDT/kWh', color: '#ef5350' }, ticks: { color: '#ef5350' }, grid: { drawOnChartArea: false } },
           }
         }
       });
@@ -291,9 +366,19 @@
     async function optimize() {
       const btn = $('optimize');
       btn.disabled = true;
+      hideError();
       setStatus('optimizing…');
+      let payload;
       try {
-        const payload = buildPayload();
+        payload = buildPayload();
+      } catch (err) {
+        resetResultsPanel();
+        showError('Invalid scenario JSON.', err.message);
+        setStatus('error', 'err');
+        btn.disabled = false;
+        return;
+      }
+      try {
         const t0 = performance.now();
         const res = await fetch(API, {
           method: 'POST',
@@ -303,13 +388,28 @@
         const ms = (performance.now() - t0).toFixed(0);
         const body = await res.json().catch(() => ({}));
         if (!res.ok) {
-          setStatus(`HTTP ${res.status}: ${body.error || 'request failed'}`, 'err');
+          resetResultsPanel();
+          const detail = body.error ? `Server: ${body.error}` : `HTTP ${res.status}`;
+          showError(res.status >= 500 ? 'Server error. Check that the API is running on port 8000.' : 'Request rejected by server.', detail);
+          setStatus(`HTTP ${res.status}`, 'err');
           return;
         }
-        render(body);
+        if (!body || !Array.isArray(body.hourly_plan) || body.hourly_plan.length !== 24) {
+          resetResultsPanel();
+          showError('Unexpected response from server.', 'Missing or malformed hourly_plan.');
+          setStatus('bad response', 'err');
+          return;
+        }
+        render(body, payload.hours);
         setStatus(`200 OK in ${ms} ms`, 'ok');
       } catch (err) {
-        setStatus(`error: ${err.message}`, 'err');
+        resetResultsPanel();
+        const isNetwork = err instanceof TypeError;
+        showError(
+          isNetwork ? 'Could not reach the API.' : 'Unexpected client error.',
+          isNetwork ? `Is uvicorn running at ${API}?` : (err && err.message ? err.message : String(err))
+        );
+        setStatus(isNetwork ? 'network error' : 'error', 'err');
       } finally {
         btn.disabled = false;
       }
@@ -322,6 +422,7 @@
       $('notes').value = '';
       $('hours-json').value = '';
       setStatus('idle');
+      hideError();
       $('empty').style.display = 'block';
       $('totals').style.display = 'none';
       $('summary').style.display = 'none';
