@@ -26,12 +26,12 @@ Create a local `.env` file with only the provider variables you use. Never commi
 
 ## Final rubric checklist
 
-- [ ] Live base URL responds to `/health` and `/optimize-energy` from outside the development machine.
+- [x] Live base URL responds to `/health` and `/optimize-energy` from outside the development machine.
 - [ ] GitHub repository link is accessible as required by the submission rules.
 - [ ] Exact Docker image tag pulls and runs; `/health` responds from the container.
-- [ ] README covers quickstart, environment variable names, model/provider, architecture, API example, sample tests, Docker, and limitations.
-- [ ] Public samples: 10/10 interpretation and cost within 0.01 BDT; replay check has no violations.
+- [x] README covers quickstart, environment variable names, model/provider, architecture, API example, sample tests, Docker, and limitations.
+- [x] Public samples: 10/10 interpretation and cost within 0.01 BDT; replay check has no violations.
 - [ ] Paraphrase check accuracy is at least 90%.
-- [ ] API tests pass with `python -m pytest -q`.
+- [x] API tests pass with `python -m pytest -q`.
 - [ ] Demo video is at most three minutes and its link is publicly viewable.
-- [ ] Repository and deployment contain no secrets.
+- [x] Repository and deployment contain no secrets.
