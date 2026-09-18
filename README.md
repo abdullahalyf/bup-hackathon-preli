@@ -1,6 +1,6 @@
 <div align="center">
 
-![GridWise Banner](docs/banner.png)
+<img src="docs/gridwise-logo.svg" alt="GridWise Banner" width="256" height="256" />
 
 # ⚡ GridWise
 
@@ -310,7 +310,7 @@ bup-hackathon-preli/
 │   ├── CONTRACTS.md            # single source of truth for the public API
 │   ├── MASTER_PLAN.md          # team plan + work-unit prompts
 │   ├── VIDEO_SCRIPT.md         # 3-minute demo script
-│   ├── banner.png              # README banner (placeholder)
+│   └── gridwise-logo.svg       # README banner logo
 │   └── STATUS.md
 ├── tasks/                      # per-member task briefs
 ├── Dockerfile
