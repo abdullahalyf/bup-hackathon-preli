@@ -1,6 +1,6 @@
 # Alif — head and API integrator
 
-**Mission:** Keep everyone unblocked, keep main running, merge, and submit. You are the only person who merges to main. **Own:** `app/main.py`, `app/schemas.py`, `app/__init__.py`, `app/interpreter/__init__.py`, `app/optimizer/__init__.py`, `requirements.txt`, `.env.example`, `.gitignore`, `docs/*`, `tasks/*`, `AGENTS.md`, `CLAUDE.md`.
+**Mission:** Keep everyone unblocked, keep main running, merge, and submit. You are the only person who merges to main. **Own:** `app/main.py`, `app/schemas.py`, `app/__init__.py`, `app/interpreter/__init__.py`, `app/optimizer/__init__.py`, `requirements.txt`, `.env.example`, `.gitignore`, `docs/*`, `tasks/*`, `AGENTS.md`, `CLAUDE.md`, `tests/test_api_layer.py`.
 
 Read `AGENTS.md`, `docs/CONTRACTS.md`, and `tasks/HOW_TO_WORK.md` first. Times are relative to hackathon start. Checkpoints: 0:50, 1:40, 2:30. Feature freeze: 2:45.
 
