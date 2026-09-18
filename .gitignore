@@ -1,17 +1,54 @@
+# Python
 .venv/
-.uv-cache/
-.tmp/
+venv/
+env/
+ENV/
+.python-version
 __pycache__/
+pycache/
 *.py[cod]
+*$py.class
+*.so
 *.egg-info/
+build/
+dist/
+.eggs/
+pip-wheel-metadata/
+
+# Test, coverage, and lint caches
 .pytest_cache/
 pytest-cache-files-*/
 .mypy_cache/
 .ruff_cache/
 .coverage
+.coverage.*
 htmlcov/
-build/
-dist/
+coverage.xml
+.cache/
+
+# Environment and secrets
 .env
 .env.*
 !.env.example
+
+# Runtime and app logs
+*.log
+uvi.out
+uvi.err
+.tmp/
+
+# Editor and IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Misc
+.uv-cache/
+node_modules/
