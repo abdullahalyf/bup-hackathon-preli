@@ -151,7 +151,7 @@ All Python dependencies are pinned in [`requirements.txt`](requirements.txt): `f
 | ----------------------- | -------- | -------------------------------------------------------------------------------- |
 | `LLM_API_KEY`           | ✅ (for live LLM) | API key for the **primary** OpenAI-compatible provider.                         |
 | `LLM_BASE_URL`          | optional | Base URL for the primary provider.                                               |
-| `LLM_MODEL`             | ✅ (for live LLM) | Provider model id, e.g. `gemini-1.5-flash`, `gpt-4o-mini`.                       |
+| `LLM_MODEL`             | ✅ (for live LLM) | Primary model id (`gemini-3.5-flash-lite` in the deployment).                    |
 | `LLM_FALLBACK_API_KEY`  | optional | API key for the **fallback** provider. Used when the primary fails / rate-limits.|
 | `LLM_FALLBACK_BASE_URL` | optional | Base URL for the fallback provider (e.g. Groq).                                  |
 | `LLM_FALLBACK_MODEL`    | optional | Fallback model id.                                                               |
@@ -162,11 +162,11 @@ Example `.env` (no real secrets shown — fill in your own keys):
 ```dotenv
 LLM_API_KEY=your-primary-key-here
 LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-LLM_MODEL=gemini-1.5-flash
+LLM_MODEL=gemini-3.5-flash-lite
 
 LLM_FALLBACK_API_KEY=your-fallback-key-here
 LLM_FALLBACK_BASE_URL=https://api.groq.com/openai/v1
-LLM_FALLBACK_MODEL=llama-3.1-70b-versatile
+LLM_FALLBACK_MODEL=openai/gpt-oss-120b
 
 PORT=8000
 ```
@@ -278,6 +278,11 @@ The canonical hackathon deployment is live at:
 - `POST /optimize-energy` accepts the same JSON shape as the local server.
 
 The prebuilt Docker image is published at `ghcr.io/abdullahalyf/gridwise:v1`. Railway redeploys automatically when `main` is updated.
+
+```bash
+docker pull ghcr.io/abdullahalyf/gridwise:v1
+docker run --rm -p 8000:8000 --env-file .env ghcr.io/abdullahalyf/gridwise:v1
+```
 
 ---
 
