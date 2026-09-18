@@ -16,7 +16,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # .dockerignore still excludes tests/data/docs/scripts/tasks.
 COPY app ./app
 COPY frontend ./frontend
-COPY frontend ./frontend
 
 # Run as a non-root user.
 RUN groupadd --system --gid 1000 gridwise \

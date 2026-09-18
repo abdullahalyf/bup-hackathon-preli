@@ -262,7 +262,9 @@ def main():
     print("GridWise interpreter acceptance")
     print("=" * 60)
 
-    core._cached_interpret.cache_clear()
+    cached_interpret = getattr(core, "_cached_interpret", None)
+    if cached_interpret is not None and hasattr(cached_interpret, "cache_clear"):
+        cached_interpret.cache_clear()
 
     pub_correct, pub_total, pub_lat, pub_details = run_public(samples_path)
     pub_pct = (100.0 * pub_correct / pub_total) if pub_total else 0.0
