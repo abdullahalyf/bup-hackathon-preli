@@ -271,7 +271,7 @@ A full 24-hour payload lives in [`data/public_samples.json`](data/public_samples
 
 The canonical hackathon deployment is live at:
 
-**👉 https://gridwise-production-0e08.up.railway.app**
+**👉 http://bup-hackathon-preli-brown.vercel.app/**
 
 - The site root (`/`) serves the operator console.
 - `GET /health` returns `{"status":"ok"}`.
